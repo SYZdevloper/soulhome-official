@@ -1,9 +1,10 @@
-import { createClient } from "@/lib/server"
+import { createClient as createServerClient } from "@/lib/server"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Library, Download, CreditCard, TrendingUp, Clock, FileText } from "lucide-react"
 
 export default async function AdminPage() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
   let user = null
   try {
     const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -16,41 +17,47 @@ export default async function AdminPage() {
     return null
   }
 
+  // Create an admin client to bypass RLS and fetch ALL data
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   // Get stats
-  const { count: totalMembers } = await supabase
+  const { count: totalMembers } = await supabaseAdmin
     .from('profiles')
     .select('*', { count: 'exact', head: true })
 
-  const { count: activeSubscriptions } = await supabase
+  const { count: activeSubscriptions } = await supabaseAdmin
     .from('subscriptions')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'active')
 
-  const { count: totalResources } = await supabase
+  const { count: totalResources } = await supabaseAdmin
     .from('resources')
     .select('*', { count: 'exact', head: true })
 
-  const { count: publishedResources } = await supabase
+  const { count: publishedResources } = await supabaseAdmin
     .from('resources')
     .select('*', { count: 'exact', head: true })
     .eq('is_published', true)
 
-  const { count: totalDownloads } = await supabase
+  const { count: totalDownloads } = await supabaseAdmin
     .from('downloads')
     .select('*', { count: 'exact', head: true })
 
-  const { count: totalBlogs } = await supabase
+  const { count: totalBlogs } = await supabaseAdmin
     .from('blogs')
     .select('*', { count: 'exact', head: true })
 
   // Get recent activity
-  const { data: recentMembers } = await supabase
+  const { data: recentMembers } = await supabaseAdmin
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const { data: recentDownloads } = await supabase
+  const { data: recentDownloads } = await supabaseAdmin
     .from('downloads')
     .select('*, resource:resources(title), profile:profiles(full_name, email)')
     .order('downloaded_at', { ascending: false })

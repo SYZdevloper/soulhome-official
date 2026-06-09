@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { createBlog, updateBlog, uploadBlogImage, type BlogData } from "@/app/actions/blog"
 import { Loader2, Image as ImageIcon, X } from "lucide-react"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 interface BlogFormProps {
   initialData?: BlogData & { id: string }
@@ -141,26 +142,27 @@ export function BlogForm({ initialData }: BlogFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="excerpt">Excerpt / Subtitle</Label>
-                <Textarea 
-                  id="excerpt" 
-                  value={excerpt} 
-                  onChange={(e) => setExcerpt(e.target.value)} 
-                  className="bg-background/50 resize-none h-20"
-                  placeholder="A brief summary of this blog post..."
-                />
+                <Label htmlFor="excerpt" className="text-base font-semibold">Excerpt / Description</Label>
+                <p className="text-xs text-muted-foreground mb-2">A brief summary or subtitle for this post.</p>
+                <div className="min-h-[150px]">
+                  <RichTextEditor 
+                    content={excerpt} 
+                    onChange={setExcerpt} 
+                    placeholder="Write a captivating description..."
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="content">Content (Markdown Supported)</Label>
-                <Textarea 
-                  id="content" 
-                  value={content} 
-                  onChange={(e) => setContent(e.target.value)} 
-                  required 
-                  className="bg-background/50 font-mono text-sm h-[400px]"
-                  placeholder="## Heading 2&#10;Write your majestic content here..."
-                />
+              <div className="space-y-2 pt-4">
+                <Label htmlFor="content" className="text-base font-semibold">Main Content</Label>
+                <p className="text-xs text-muted-foreground mb-2">Write your full majestic article here. Supports formatting, links, and lists.</p>
+                <div className="min-h-[400px]">
+                  <RichTextEditor 
+                    content={content} 
+                    onChange={setContent} 
+                    placeholder="Start writing your magical post..."
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -211,9 +211,9 @@ export default function LiveSessionsPage() {
         <div className="container mx-auto px-4 text-center space-y-10">
           <h2 className="font-serif text-4xl md:text-5xl font-bold tracking-tight">Begin Your Journey</h2>
           <p className="text-xl opacity-90 font-serif italic max-w-2xl mx-auto leading-relaxed text-balance">
-            Book your session below or join the waitlist for the next seasonal opening.
+            Book your session below. Waitlist updates are available in the footer!
           </p>
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col items-center gap-16">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 rounded-full px-14 py-9 text-xl font-bold transition-all shadow-xl hover:scale-105" asChild>
               <Link href="https://calendly.com/soulhome-love" target="_blank" rel="noopener noreferrer" className="no-underline">
                 BOOK YOUR SESSION HERE

@@ -49,7 +49,7 @@ export default async function DashboardLayout({
 
   const navLinks = [
     { href: "/", label: "Home", icon: LayoutDashboard }, // Using LayoutDashboard temporarily for Home
-    { href: "/dashboard", label: "My Journey", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Kundalini School", icon: LayoutDashboard },
     { href: "/services", label: "Services", icon: Library }, // Using Library temporarily for Services
     { href: "/dashboard/resources", label: "Resources", icon: Library },
     { href: "/dashboard/downloads", label: "My Downloads", icon: Download },

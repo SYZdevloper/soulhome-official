@@ -39,25 +39,25 @@ export default function TermsPage() {
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">2. Healing Process</h3>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>2.1 You acknowledge that inner work and energetic processes may trigger emotional, psychological, or lifestyle changes.</li>
-                  <li>2.2 You accept full responsibility for how you process, integrate, and act upon the session.</li>
-                  <li>2.3 Krisha does not guarantee emotional, physical, relational, or financial outcomes.</li>
-                  <li>2.4 If you are pregnant, trying to conceive, or under medical or psychological care, you agree to inform Krisha in advance and seek appropriate professional advice where necessary.</li>
-                  <li>2.5 Krisha is not responsible for any health-related or psychological outcomes arising before, during, or after the session.</li>
-                </ul>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>2.1 You acknowledge that inner work and energetic processes may trigger emotional, psychological, or lifestyle changes.</p>
+                  <p>2.2 You accept full responsibility for how you process, integrate, and act upon the session.</p>
+                  <p>2.3 Krisha does not guarantee emotional, physical, relational, or financial outcomes.</p>
+                  <p>2.4 If you are pregnant, trying to conceive, or under medical or psychological care, you agree to inform Krisha in advance and seek appropriate professional advice where necessary.</p>
+                  <p>2.5 Krisha is not responsible for any health-related or psychological outcomes arising before, during, or after the session.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">3. Client Responsibility</h3>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>3.1 You confirm that you are voluntarily choosing to participate.</li>
-                  <li>3.2 You are solely responsible for your decisions, actions, and interpretations following the session.</li>
-                  <li>3.3 You agree not to rely on the session as a substitute for professional advice or intervention.</li>
-                  <li>3.4 Clients under 18 must have parental consent and supervision.</li>
-                  <li>3.5 You are responsible for attending on time, ensuring a stable internet connection, and being in a private, distraction-free environment.</li>
-                  <li>3.6 Failure to meet these conditions does not qualify for rescheduling or refund.</li>
-                </ul>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>3.1 You confirm that you are voluntarily choosing to participate.</p>
+                  <p>3.2 You are solely responsible for your decisions, actions, and interpretations following the session.</p>
+                  <p>3.3 You agree not to rely on the session as a substitute for professional advice or intervention.</p>
+                  <p>3.4 Clients under 18 must have parental consent and supervision.</p>
+                  <p>3.5 You are responsible for attending on time, ensuring a stable internet connection, and being in a private, distraction-free environment.</p>
+                  <p>3.6 Failure to meet these conditions does not qualify for rescheduling or refund.</p>
+                </div>
               </div>
 
               <div>
@@ -71,32 +71,38 @@ export default function TermsPage() {
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">5. Payments, Refunds & Rescheduling</h3>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>5.1 Full payment is required in advance to confirm your booking.</li>
-                  <li>5.2 All payments are final and non-refundable, including cancellations, missed sessions, or change of mind.</li>
-                  <li>5.3 A session is considered a no-show if you are more than 10 minutes late. No-shows are non-refundable and non-reschedulable.</li>
-                  <li>5.4 Rescheduling requests must be submitted via email, are not guaranteed within 48 hours of the session, and are approved at Krisha&apos;s discretion.</li>
-                  <li>5.5 Krisha reserves the right to cancel or discontinue a session due to illness, emergency, or misalignment. In such cases, a refund or reschedule will be offered at her discretion.</li>
-                </ul>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>5.1 Full payment is required in advance to confirm your booking.</p>
+                  <p>5.2 All payments are final and non-refundable, including cancellations, missed sessions, or change of mind.</p>
+                  <p>5.3 A session is considered a no-show if you are more than 10 minutes late. No-shows are non-refundable and non-reschedulable.</p>
+                  <p>5.4 Rescheduling requests must be submitted via email, are not guaranteed within 48 hours of the session, and are approved at Krisha&apos;s discretion.</p>
+                  <p>5.5 Krisha reserves the right to cancel or discontinue a session due to illness, emergency, or misalignment. In such cases, a refund or reschedule will be offered at her discretion.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">6. Ethical Boundaries</h3>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>6.1 No harmful, manipulative, or unethical practices will be engaged with.</li>
-                  <li>6.2 No predictive or fortune-telling requests will be answered.</li>
-                  <li>6.3 Any abusive, inappropriate, or disrespectful behaviour will result in immediate termination of the session without refund.</li>
-                </ul>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>6.1 No harmful, manipulative, or unethical practices will be engaged with.</p>
+                  <p>6.2 No predictive or fortune-telling requests will be answered.</p>
+                  <p>6.3 Any abusive, inappropriate, or disrespectful behaviour will result in immediate termination of the session without refund.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">7. Confidentiality</h3>
-                <p className="text-muted-foreground">7.1 All personal information and session content are treated as confidential. 7.2 Confidentiality may be broken only where required by law.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>7.1 All personal information and session content are treated as confidential.</p>
+                  <p>7.2 Confidentiality may be broken only where required by law.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">8. Intellectual Property</h3>
-                <p className="text-muted-foreground">8.1 All session content, teachings, and materials shared are the intellectual property of Krisha. 8.2 You may not record, reproduce, distribute, or share any part of the session without explicit written permission.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>8.1 All session content, teachings, and materials shared are the intellectual property of Krisha.</p>
+                  <p>8.2 You may not record, reproduce, distribute, or share any part of the session without explicit written permission.</p>
+                </div>
               </div>
 
               <div>
@@ -128,27 +134,38 @@ export default function TermsPage() {
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">2. Membership & Payment</h3>
-                <p className="text-muted-foreground">2.1 This is a recurring monthly subscription. 2.2 Payments are automatically charged on your billing cycle. 2.3 You are responsible for ensuring your payment details are accurate and up to date.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>2.1 This is a recurring monthly subscription.</p>
+                  <p>2.2 Payments are automatically charged on your billing cycle.</p>
+                  <p>2.3 You are responsible for ensuring your payment details are accurate and up to date.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">3. Subscription & Cancellation</h3>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>3.1 Membership continues until cancelled.</li>
-                  <li>3.2 Cancellation requires at least one full billing cycle notice.</li>
-                  <li>3.3 You will retain access until the end of your paid period.</li>
-                  <li>3.4 No partial refunds are provided for unused time.</li>
-                </ul>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>3.1 Membership continues until cancelled.</p>
+                  <p>3.2 Cancellation requires at least one full billing cycle notice.</p>
+                  <p>3.3 You will retain access until the end of your paid period.</p>
+                  <p>3.4 No partial refunds are provided for unused time.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">4. No Refund Policy</h3>
-                <p className="text-muted-foreground">4.1 All payments are non-refundable once processed. 4.2 This includes lack of use, partial participation, or change of mind.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>4.1 All payments are non-refundable once processed.</p>
+                  <p>4.2 This includes lack of use, partial participation, or change of mind.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">5. Access & Use</h3>
-                <p className="text-muted-foreground">5.1 Your membership grants you a limited, non-transferable, personal licence to access content. 5.2 Access may be revoked at any time if terms are violated. 5.3 Content availability may change or evolve without notice.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>5.1 Your membership grants you a limited, non-transferable, personal licence to access content.</p>
+                  <p>5.2 Access may be revoked at any time if terms are violated.</p>
+                  <p>5.3 Content availability may change or evolve without notice.</p>
+                </div>
               </div>
 
               <div>
@@ -162,22 +179,34 @@ export default function TermsPage() {
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">7. Community Conduct</h3>
-                <p className="text-muted-foreground">7.1 You agree to maintain respectful and confidential participation in any group space. 7.2 Harmful, abusive, or inappropriate behaviour will result in removal without refund.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>7.1 You agree to maintain respectful and confidential participation in any group space.</p>
+                  <p>7.2 Harmful, abusive, or inappropriate behaviour will result in removal without refund.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">8. Personal Responsibility</h3>
-                <p className="text-muted-foreground">8.1 You are responsible for your own engagement, interpretation, and integration. 8.2 No outcomes are promised or guaranteed.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>8.1 You are responsible for your own engagement, interpretation, and integration.</p>
+                  <p>8.2 No outcomes are promised or guaranteed.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">9. Limitation of Liability</h3>
-                <p className="text-muted-foreground">9.1 Kundalini School is provided &ldquo;as is&rdquo; without warranties of any kind. 9.2 Krisha is not liable for personal outcomes, misuse or misinterpretation of content, or technical interruptions.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>9.1 Kundalini School is provided &ldquo;as is&rdquo; without warranties of any kind.</p>
+                  <p>9.2 Krisha is not liable for personal outcomes, misuse or misinterpretation of content, or technical interruptions.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3">10. General Legal Protection</h3>
-                <p className="text-muted-foreground">10.1 These terms are governed by the laws of the United Kingdom. 10.2 By using this website or services, you agree to these terms in full.</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>10.1 These terms are governed by the laws of the United Kingdom.</p>
+                  <p>10.2 By using this website or services, you agree to these terms in full.</p>
+                </div>
               </div>
             </div>
           </section>

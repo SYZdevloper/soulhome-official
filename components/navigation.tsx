@@ -104,8 +104,8 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
                           <Link href="/admin" onClick={() => setOpen(false)}>Admin</Link>
                         </Button>
                       )}
-                      <Button asChild className="w-full">
-                        <Link href="/dashboard" onClick={() => setOpen(false)}>My Journey</Link>
+                      <Button asChild className="w-full bg-primary/5 border border-primary/20 text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/40 hover:border-primary transition-all duration-500">
+                        <Link href="/dashboard" onClick={() => setOpen(false)}>Kundalini School</Link>
                       </Button>
                     </>
                   ) : (
@@ -170,10 +170,12 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
                   </Button>
                 )}
                 <Button variant="ghost" asChild className={cn(
-                  "hover:bg-white/10 rounded-full",
-                  isDarkText ? "text-primary hover:text-primary/80 hover:bg-primary/10" : "text-white hover:text-white/80"
+                  "rounded-full transition-all duration-500 backdrop-blur-md border shadow-sm px-6",
+                  isDarkText 
+                    ? "bg-primary/5 border-primary/20 text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/40 hover:border-primary" 
+                    : "bg-white/10 border-white/20 text-white hover:bg-white hover:text-primary hover:shadow-lg hover:shadow-white/40 hover:border-white"
                 )}>
-                  <Link href="/dashboard">My Journey</Link>
+                  <Link href="/dashboard">Kundalini School</Link>
                 </Button>
               </>
             ) : (

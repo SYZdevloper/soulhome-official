@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { WaitlistForm } from "@/components/waitlist-form"
 
 const footerLinks = {
   explore: [
@@ -37,6 +38,10 @@ export function Footer() {
             <p className="mt-4 max-w-md text-sm text-muted-foreground leading-relaxed">
               A sacred space for spiritual seekers to deepen their practice and awaken to their highest potential through ancient wisdom.
             </p>
+            <div className="mt-8 max-w-md bg-white/40 dark:bg-black/20 p-4 rounded-2xl border border-primary/10">
+              <h3 className="font-semibold text-foreground mb-3 text-sm">Join the Waitlist</h3>
+              <WaitlistForm variant="compact" />
+            </div>
           </div>
 
           {/* Explore */}
