@@ -179,6 +179,7 @@ export function EmailClient({ emailsSentToday, audienceCounts }: EmailClientProp
             <div className="p-4 bg-secondary/30 rounded-xl border border-secondary">
                <h4 className="font-semibold text-sm mb-2">How it works</h4>
                <ul className="text-xs text-muted-foreground space-y-2 list-disc list-inside">
+                  <li><strong>Personalization:</strong> Type <code>{'{name}'}</code> or <code>{'{username}'}</code> anywhere in your email to automatically insert the recipient's first name.</li>
                   <li><strong>Deduplication:</strong> If a user is on both the waitlist and registered, they will only receive 1 email.</li>
                   <li><strong>Formatting:</strong> The HTML you write here is safely wrapped inside your gorgeous #6d28d9 Soul Home email template.</li>
                </ul>

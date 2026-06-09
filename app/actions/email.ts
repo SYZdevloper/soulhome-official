@@ -1,8 +1,16 @@
 "use server"
 
 import { Resend } from 'resend';
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+function getSupabaseAdmin() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function sendWelcomeEmail(email: string, name: string) {
     if (!process.env.RESEND_API_KEY) {
@@ -32,6 +40,13 @@ export async function sendWelcomeEmail(email: string, name: string) {
                 </div>
             `
         });
+        
+        const supabaseAdmin = getSupabaseAdmin();
+        await supabaseAdmin.from("email_logs").insert({
+            subject: 'Welcome to Soul Home ✨',
+            recipient_count: 1,
+        });
+
         console.log(`Welcome email sent to ${email}`);
     } catch (error) {
         console.error("Error sending welcome email:", error);
@@ -60,6 +75,13 @@ export async function sendCancellationEmail(email: string, name: string, periodE
                 </div>
             `
         });
+
+        const supabaseAdmin = getSupabaseAdmin();
+        await supabaseAdmin.from("email_logs").insert({
+            subject: 'Subscription Cancellation Confirmed',
+            recipient_count: 1,
+        });
+
         console.log(`Cancellation email sent to ${email}`);
     } catch (error) {
         console.error("Error sending cancellation email:", error);
@@ -91,6 +113,13 @@ export async function sendContactEmail(name: string, email: string, subject: str
                 </div>
             `
         });
+
+        const supabaseAdmin = getSupabaseAdmin();
+        await supabaseAdmin.from("email_logs").insert({
+            subject: `New Contact Form Submission: ${subject}`,
+            recipient_count: 2, // Admin emails
+        });
+
         console.log(`Contact form email sent from ${email}`);
         return { success: true };
     } catch (error: any) {
@@ -122,10 +151,7 @@ export async function sendBulkEmail(formData: FormData) {
   if (!profile?.is_admin) return { error: "Unauthorized" };
 
   // Create admin client for fetching all users
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseAdmin = getSupabaseAdmin();
 
   // Check Daily Limit
   const today = new Date();
@@ -139,10 +165,10 @@ export async function sendBulkEmail(formData: FormData) {
   const emailsSentToday = logs?.reduce((sum, log) => sum + log.recipient_count, 0) || 0;
 
   // Fetch recipients based on target
-  let emails = new Set<string>();
+  let recipients = new Map<string, string>(); // email -> name
 
   if (["all_registered", "active", "expired", "free", "everyone"].includes(target)) {
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, email");
+    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, email, full_name");
     const { data: subscriptions } = await supabaseAdmin.from("subscriptions").select("user_id, status");
 
     const subsByUser = new Map();
@@ -150,14 +176,15 @@ export async function sendBulkEmail(formData: FormData) {
 
     profiles?.forEach(p => {
       const status = subsByUser.get(p.id);
+      const name = p.full_name || "Friend";
       if (target === "all_registered" || target === "everyone") {
-        if (p.email) emails.add(p.email);
+        if (p.email) recipients.set(p.email, name);
       } else if (target === "active" && status === "active") {
-        if (p.email) emails.add(p.email);
+        if (p.email) recipients.set(p.email, name);
       } else if (target === "expired" && status && status !== "active") {
-        if (p.email) emails.add(p.email);
+        if (p.email) recipients.set(p.email, name);
       } else if (target === "free" && !status) {
-        if (p.email) emails.add(p.email);
+        if (p.email) recipients.set(p.email, name);
       }
     });
   }
@@ -169,18 +196,23 @@ export async function sendBulkEmail(formData: FormData) {
 
     const { data: waitlist } = await query;
     waitlist?.forEach(w => {
-      if (w.email) emails.add(w.email);
+      if (w.email && !recipients.has(w.email)) {
+        // Since waitlist doesn't have names, extract from email or use "Friend"
+        const namePart = w.email.split('@')[0];
+        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        recipients.set(w.email, formattedName || "Friend");
+      }
     });
   }
 
-  const recipientEmails = Array.from(emails);
+  const recipientList = Array.from(recipients.entries());
 
-  if (recipientEmails.length === 0) {
+  if (recipientList.length === 0) {
     return { error: "No recipients found for the selected target." };
   }
 
-  if (emailsSentToday + recipientEmails.length > DAILY_LIMIT) {
-    return { error: `Sending to ${recipientEmails.length} recipients would exceed your daily limit of ${DAILY_LIMIT}. You have already sent ${emailsSentToday} today.` };
+  if (emailsSentToday + recipientList.length > DAILY_LIMIT) {
+    return { error: `Sending to ${recipientList.length} recipients would exceed your daily limit of ${DAILY_LIMIT}. You have already sent ${emailsSentToday} today.` };
   }
 
   // Branded HTML Template Wrapper
@@ -200,13 +232,19 @@ export async function sendBulkEmail(formData: FormData) {
   `;
 
   try {
-    const { error: sendError } = await resend.emails.send({
-      from: "Soul Home <hello@soulhomelove.com>",
-      to: "hello@soulhomelove.com", 
-      bcc: recipientEmails,
-      subject: subject,
-      html: htmlContent,
+    // Construct individualized emails for batch sending
+    const batchEmails = recipientList.map(([email, name]) => {
+      const personalizedHtml = htmlContent.replace(/\{name\}|\{username\}/gi, name);
+      return {
+        from: "Soul Home <hello@soulhomelove.com>",
+        to: email,
+        subject: subject,
+        html: personalizedHtml,
+      };
     });
+
+    // Resend Batch API allows up to 100 emails at a time, which perfectly matches our free tier limit!
+    const { error: sendError } = await resend.batch.send(batchEmails);
 
     if (sendError) {
       console.error("Resend API error:", sendError);
@@ -216,10 +254,10 @@ export async function sendBulkEmail(formData: FormData) {
     // Log the sent emails
     await supabaseAdmin.from("email_logs").insert({
       subject,
-      recipient_count: recipientEmails.length,
+      recipient_count: recipientList.length,
     });
 
-    return { success: true, count: recipientEmails.length };
+    return { success: true, count: recipientList.length };
   } catch (error: any) {
     console.error("Email send error:", error);
     return { error: error.message || "An unexpected error occurred." };
