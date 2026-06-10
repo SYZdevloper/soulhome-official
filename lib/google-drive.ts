@@ -35,6 +35,7 @@ export async function grantFolderAccess(userEmail: string, folderId: string) {
         const drive = getDriveClient();
         const res = await drive.permissions.create({
             fileId: folderId,
+            sendNotificationEmail: false,
             requestBody: {
                 role: 'reader', // 'reader' = Viewer
                 type: 'user',
