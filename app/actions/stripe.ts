@@ -63,11 +63,29 @@ export async function createCheckoutSession(productId: string) {
   } else {
     // If they HAVE a customer ID, make sure the metadata is synced
     // This fixes the issue where old test customers didn't have the ID attached
-    await stripe.customers.update(customerId, {
-      metadata: {
-        supabase_user_id: user.id
+    try {
+      await stripe.customers.update(customerId, {
+        metadata: {
+          supabase_user_id: user.id
+        }
+      })
+    } catch (error: any) {
+      // If the customer was created in Test Mode, it won't exist in Live Mode. 
+      // Catch the missing error and create a new Live customer instead.
+      if (error?.code === 'resource_missing' || error?.message?.includes('No such customer')) {
+        console.warn(`Customer ${customerId} not found in Stripe. Creating a new one.`)
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: {
+            supabase_user_id: user.id,
+          },
+        })
+        customerId = customer.id
+        await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id)
+      } else {
+        throw error
       }
-    })
+    }
   }
 
   const session = await stripe.checkout.sessions.create({
