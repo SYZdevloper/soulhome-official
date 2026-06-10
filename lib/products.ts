@@ -17,7 +17,7 @@ export const PRODUCTS: Product[] = [
     id: 'monthly-membership',
     name: 'Monthly Membership',
     description: 'Download any 3 healings per month',
-    priceInCents: 7700, // £77.00
+    priceInCents: 30, // £0.30 (TEMPORARY FOR TESTING)
     interval: 'month',
     type: 'subscription',
     features: [
