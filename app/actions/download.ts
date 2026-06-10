@@ -42,6 +42,13 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
         .eq('resource_id', resourceId)
         .single()
 
+    // 4.5. If NEW DOWNLOAD, Check Limit before granting access
+    if (!existingDownload) {
+        if ((subscription.downloads_used || 0) >= (subscription.downloads_limit || 3)) {
+            throw new Error("Download limit reached for this month.")
+        }
+    }
+
     // 5. Grant/Restore Google Drive Access (Idempotent)
     // We do this even for existing downloads to restore access if it was previously revoked (e.g. after a sub break)
     let permissionId = existingDownload?.drive_permission_id || null
@@ -60,11 +67,6 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
             await supabase.from('downloads').update({ drive_permission_id: permissionId }).eq('id', existingDownload.id)
         }
         return { success: true, url: resourceUrl, message: "Access Restored" }
-    }
-
-    // 7. NEW DOWNLOAD: Check Limit (3 New Downloads per Billing Period)
-    if ((subscription.downloads_used || 0) >= (subscription.downloads_limit || 3)) {
-        throw new Error("Download limit reached for this month.")
     }
 
     // 8. Record New Download (Trigger will increment usage)

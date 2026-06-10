@@ -337,13 +337,22 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
             </CardHeader>
             <CardContent>
               {subscription ? (
-                <DownloadButton
-                  resourceId={resource.id}
-                  fileUrl={resource.file_url}
-                  fileName={`${resource.slug}.${resource.type === 'pdf' ? 'pdf' : resource.type === 'audio' ? 'mp3' : 'mp4'}`}
-                  hasDownloaded={!!existingDownload}
-                  slug={slug}
-                />
+                (!existingDownload && downloadsLeft === 0) ? (
+                  <div className="text-center p-4 bg-muted/50 rounded-lg border border-border">
+                    <p className="text-sm font-medium text-foreground">Limit Reached</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You have used all your downloads for this billing period.
+                    </p>
+                  </div>
+                ) : (
+                  <DownloadButton
+                    resourceId={resource.id}
+                    fileUrl={resource.file_url}
+                    fileName={`${resource.slug}.${resource.type === 'pdf' ? 'pdf' : resource.type === 'audio' ? 'mp3' : 'mp4'}`}
+                    hasDownloaded={!!existingDownload}
+                    slug={slug}
+                  />
+                )
               ) : (
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
