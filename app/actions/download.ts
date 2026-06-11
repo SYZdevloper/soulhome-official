@@ -27,6 +27,12 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
     if (!subscription) throw new Error("No active subscription")
 
     // 3. Get Resource Details & File ID
+    const { data: resource } = await supabase
+        .from('resources')
+        .select('type')
+        .eq('id', resourceId)
+        .single()
+        
     const fileId = getFileIdFromUrl(resourceUrl)
     if (!fileId) throw new Error("Invalid resource URL configuration")
 
@@ -50,14 +56,18 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
     }
 
     // 5. Grant/Restore Google Drive Access (Idempotent)
-    // We do this even for existing downloads to restore access if it was previously revoked (e.g. after a sub break)
+    // For PDFs, we proxy the file securely via our API so the user DOES NOT need direct Drive access.
+    // We only grant Drive access for Audio/Video which stream directly from Drive.
     let permissionId = existingDownload?.drive_permission_id || null
-    try {
-        permissionId = await grantFolderAccess(profile.email, fileId)
-    } catch (err: any) {
-        console.error("Drive Grant Error:", err)
-        const errorMessage = err?.message || err?.error_description || "Unknown Drive API Error"
-        throw new Error(`Google Drive Error: ${errorMessage}`)
+    
+    if (resource?.type !== 'pdf') {
+        try {
+            permissionId = await grantFolderAccess(profile.email, fileId)
+        } catch (err: any) {
+            console.error("Drive Grant Error:", err)
+            const errorMessage = err?.message || err?.error_description || "Unknown Drive API Error"
+            throw new Error(`Google Drive Error: ${errorMessage}`)
+        }
     }
 
     // 6. If ALREADY DOWNLOADED, we are done (Access restored, no quota used)

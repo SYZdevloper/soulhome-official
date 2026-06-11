@@ -236,7 +236,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                         return (
                           <div className="aspect-[4/5] w-full bg-white">
                             <iframe
-                              src={`/api/resources/${resource.id}/pdf`}
+                              src={`/api/resources/${resource.id}/pdf#toolbar=0`}
                               className="h-full w-full border-0"
                               title={resource.title}
                             />
