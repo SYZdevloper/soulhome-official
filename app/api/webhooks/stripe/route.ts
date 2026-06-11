@@ -81,9 +81,23 @@ export async function POST(request: Request) {
         }
 
         if (existingSub) {
+          // Parse dates to compare timestamps to see if the billing period rolled over (renewed)
+          const oldStartMs = existingSub.current_period_start ? new Date(existingSub.current_period_start).getTime() : 0
+          const newStartMs = currentPeriodStart ? currentPeriodStart * 1000 : 0
+
+          // If the new start time is greater than the old start time, it is a renewal rollover
+          const isRollover = oldStartMs > 0 && newStartMs > oldStartMs
+
+          const updateData = {
+            ...subscriptionData,
+            ...(isRollover ? { downloads_used: 0 } : {})
+          }
+
+          console.log(`[Stripe Webhook] Updating subscription ${subscription.id}. isRollover: ${isRollover}`)
+
           await supabase
             .from('subscriptions')
-            .update(subscriptionData)
+            .update(updateData)
             .eq('stripe_subscription_id', subscription.id)
         } else {
           // === FIND THE USER ID ===

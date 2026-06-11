@@ -41,7 +41,7 @@ export default function SignUpPage() {
 
         const supabase = createClient()
         const { error } = await supabase.auth.signUp({
-            email,
+            email: email.trim(),
             password,
             options: {
                 emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||

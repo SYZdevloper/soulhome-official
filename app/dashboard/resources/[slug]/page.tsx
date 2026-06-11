@@ -80,6 +80,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
   const Icon = typeIcons[resource.type as keyof typeof typeIcons] || FileText
   const typeLabel = typeLabels[resource.type as keyof typeof typeLabels] || resource.type
   const typeColor = typeColors[resource.type as keyof typeof typeColors] || "bg-secondary text-foreground"
+  const driveFileId = resource.file_url ? getFileIdFromUrl(resource.file_url) : null
 
   function formatFileSize(bytes: number | null) {
     if (!bytes) return null
@@ -136,8 +137,6 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               {resource.type === 'video' && resource.file_url && (
                 <div className="aspect-video overflow-hidden rounded-lg bg-secondary relative">
                   {(() => {
-                    const driveFileId = getFileIdFromUrl(resource.file_url)
-
                     // Case 1: Google Drive Video
                     if (driveFileId) {
                       if (existingDownload) {
@@ -192,8 +191,6 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               {resource.type === 'audio' && resource.file_url && (
                 <div className="rounded-lg bg-secondary p-6 relative">
                   {(() => {
-                    const driveFileId = getFileIdFromUrl(resource.file_url)
-
                     if (driveFileId) {
                       if (existingDownload) {
                         return (
@@ -233,15 +230,13 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               {resource.type === 'pdf' && resource.file_url && (
                 <div className="rounded-lg bg-secondary relative overflow-hidden">
                   {(() => {
-                    const driveFileId = getFileIdFromUrl(resource.file_url)
-
                     if (driveFileId) {
                       if (existingDownload) {
-                        // PDF Preview - give it some height
+                        // PDF Preview - load from secure local proxy to bypass Safari cookie blocking
                         return (
                           <div className="aspect-[4/5] w-full bg-white">
                             <iframe
-                              src={`https://drive.google.com/file/d/${driveFileId}/preview`}
+                              src={`/api/resources/${resource.id}/pdf`}
                               className="h-full w-full border-0"
                               title={resource.title}
                             />
@@ -306,10 +301,10 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               ? 'bg-purple-500'
               : 'bg-purple-400'
             const message = downloadsLeft === 0
-              ? 'Download limit reached'
+              ? 'Access limit reached'
               : downloadsLeft === 1
-              ? '1 download left this month'
-              : `${downloadsLeft} downloads left this month`
+              ? '1 unlock left this month'
+              : `${downloadsLeft} unlocks left this month`
             return (
               <div className={`rounded-xl border p-4 ${bgShade}`}>
                 <div className="flex items-center justify-between mb-2">
@@ -325,14 +320,14 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               </div>
             )
           })()}
-          {/* Download Card */}
+          {/* Access Card */}
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Download Resource</CardTitle>
+              <CardTitle className="text-lg">Unlock Resource</CardTitle>
               <CardDescription>
                 {subscription
-                  ? "Save this resource for offline access"
-                  : "Subscribe to download resources"}
+                  ? "Unlock this resource to view it on the website"
+                  : "Subscribe to unlock resources"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -341,7 +336,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                   <div className="text-center p-4 bg-muted/50 rounded-lg border border-border">
                     <p className="text-sm font-medium text-foreground">Limit Reached</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      You have used all your downloads for this billing period.
+                      You have used all your unlocks for this billing period.
                     </p>
                   </div>
                 ) : (

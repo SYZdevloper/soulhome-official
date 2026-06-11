@@ -86,7 +86,7 @@ export default async function DashboardPage() {
         const barWidth = ratio * 100
         const message = isMaxed
           ? "Monthly limit reached"
-          : `${downloadsLeft} downloads left this month`
+          : `${downloadsLeft} unlocks left this month`
         
         return (
           <div className="group relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-r from-primary/5 via-background to-background p-6 shadow-sm">

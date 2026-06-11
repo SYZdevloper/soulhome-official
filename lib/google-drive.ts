@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 // Initialize the Google Drive API client
-const getDriveClient = () => {
+export const getDriveClient = () => {
     const clientEmail = process.env.GOOGLE_SERVICE_CLIENT_EMAIL;
     const privateKey = process.env.GOOGLE_SERVICE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
