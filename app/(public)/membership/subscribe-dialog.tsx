@@ -75,7 +75,7 @@ export function SubscribeDialog({ planId, buttonText = "Subscribe Now", classNam
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl text-primary">Before you proceed...</DialogTitle>
         </DialogHeader>
