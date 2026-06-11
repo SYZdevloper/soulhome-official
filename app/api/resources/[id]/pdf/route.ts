@@ -52,9 +52,9 @@ export async function GET(
       return new Response("Invalid resource type or URL configuration", { status: 400 })
     }
 
-    const fileId = existingDownload.drive_file_id
+    const fileId = getFileIdFromUrl(resource.file_url)
     if (!fileId) {
-      return new Response("Drive file ID not found", { status: 404 })
+      return new Response("Drive file ID could not be extracted from resource URL", { status: 400 })
     }
 
     // 5. Fetch file stream from Google Drive

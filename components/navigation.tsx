@@ -61,10 +61,12 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className={cn(
-                "relative z-[60] drop-shadow-lg", 
-                isDarkText ? "text-primary" : "text-white hover:bg-white/20"
+                "relative z-[60] shadow-lg rounded-full backdrop-blur-md transition-all duration-300", 
+                isDarkText 
+                  ? "text-primary bg-primary/5 hover:bg-primary/15 border border-primary/10" 
+                  : "text-white bg-black/20 hover:bg-black/40 border border-white/20"
               )}>
-                <Menu className="h-7 w-7" />
+                <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
