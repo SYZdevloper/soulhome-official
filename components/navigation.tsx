@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -71,6 +71,7 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex flex-col gap-6 pt-6">
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, FileText, Headphones, Play, Eye, EyeOff, Pencil, Trash2, Download, Library } from "lucide-react"
+import { Plus, FileText, Headphones, Play, Eye, EyeOff, Pencil, Trash2, Download, Library, ExternalLink } from "lucide-react"
 import { DeleteResourceButton } from "./delete-resource-button"
 
 export default async function AdminResourcesPage() {
@@ -98,6 +98,14 @@ export default async function AdminResourcesPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {resource.file_url && (
+                      <Button variant="outline" size="sm" className="h-10 rounded-xl font-bold bg-white text-primary border-primary/20 hover:bg-primary/5 mr-2" asChild title="Directly preview or download this file (bypasses all member limits)">
+                        <a href={resource.file_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View File
+                        </a>
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-300" asChild title="Edit Content">
                       <Link href={`/admin/resources/${resource.id}/edit`}>
                         <Pencil className="h-5 w-5" />

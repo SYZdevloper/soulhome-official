@@ -124,6 +124,26 @@ export default async function DashboardLayout({
                       </div>
                     )}
                   </div>
+                  {/* User Profile & Actions Mobile */}
+                  <div className="mt-8 pt-6 border-t border-border/50 flex flex-col gap-4">
+                    <span className="text-sm text-muted-foreground px-2">
+                      {profile?.full_name || user.email}
+                    </span>
+                    {profile?.is_admin && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <Link href="/admin">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Link>
+                      </Button>
+                    )}
+                    <form action={signOut} className="w-full">
+                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </form>
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -140,7 +160,7 @@ export default async function DashboardLayout({
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             {profile?.is_admin && (
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/admin">

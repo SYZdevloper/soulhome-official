@@ -39,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${libreBaskerville.variable} font-serif antialiased bg-background text-foreground overflow-x-hidden w-full`}>
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden max-w-[100vw]">
+      <body className={`${libreBaskerville.variable} font-serif antialiased bg-background text-foreground overflow-x-hidden max-w-[100vw]`}>
         <ContentProtection />
         <Preloader />
         <Analytics />

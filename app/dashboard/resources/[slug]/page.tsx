@@ -7,6 +7,7 @@ import Link from "next/link"
 import { ArrowLeft, BookOpen, Headphones, Play, FileText, Clock, Download, Calendar, Lock } from "lucide-react"
 import { DownloadButton } from "./download-button"
 import { getFileIdFromUrl } from "@/lib/google-drive"
+import { PdfViewer } from "./pdf-viewer"
 
 interface ResourcePageProps {
   params: Promise<{ slug: string }>
@@ -234,13 +235,10 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                       if (existingDownload) {
                         // PDF Preview - load from secure local proxy to bypass Safari cookie blocking
                         return (
-                          <div className="aspect-[4/5] w-full bg-white">
-                            <iframe
-                              src={`/api/resources/${resource.id}/pdf#toolbar=0`}
-                              className="h-full w-full border-0"
-                              title={resource.title}
-                            />
-                          </div>
+                          <PdfViewer 
+                            url={`/api/resources/${resource.id}/pdf#toolbar=0`} 
+                            title={resource.title} 
+                          />
                         )
                       } else {
                         return (
