@@ -80,7 +80,15 @@ export default function HomePage() {
 
         {/* Content */}
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="mx-auto max-w-4xl text-center">
+          <div className="mx-auto max-w-4xl text-center flex flex-col items-center">
+            <Image
+              src="/logo.png"
+              alt="Soulhome Logo"
+              width={100}
+              height={100}
+              className="object-contain mb-6 drop-shadow-2xl"
+              priority
+            />
             <h1 className="font-serif text-3xl sm:text-6xl font-bold uppercase tracking-[0.2em] text-white lg:text-8xl text-balance mb-6 drop-shadow-2xl">
               Soulhome
             </h1>

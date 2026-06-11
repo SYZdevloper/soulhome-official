@@ -60,8 +60,11 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
         <div className="absolute right-6 lg:hidden z-50">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className={isDarkText ? "text-primary" : "text-white"}>
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className={cn(
+                "relative z-[60] drop-shadow-lg", 
+                isDarkText ? "text-primary" : "text-white hover:bg-white/20"
+              )}>
+                <Menu className="h-7 w-7" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
@@ -122,7 +125,10 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
         </div>
 
         {/* Logo - Centered on Mobile using Absolute Positioning, Left on Desktop */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 lg:flex-1 lg:flex lg:justify-start">
+        <div className={cn(
+          "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 lg:flex-1 lg:flex lg:justify-start transition-opacity duration-300",
+          isTransparent ? "opacity-0 pointer-events-none" : "opacity-100"
+        )}>
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.png"
