@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/server"
-import { getDriveClient } from "@/lib/google-drive"
+import { getDriveClient, getFileIdFromUrl } from "@/lib/google-drive"
 import { Readable } from "stream"
 
 export async function GET(
