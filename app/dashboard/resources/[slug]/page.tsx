@@ -15,6 +15,7 @@ interface ResourcePageProps {
 
 export default async function ResourcePage({ params }: ResourcePageProps) {
   const { slug } = await params
+  const decodedSlug = decodeURIComponent(slug)
   const supabase = await createClient()
   let user = null
   try {
@@ -44,7 +45,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
   const { data: resource } = await supabase
     .from('resources')
     .select('*, category:categories(*)')
-    .eq('slug', slug)
+    .eq('slug', decodedSlug)
     .eq('is_published', true)
     .single()
 
