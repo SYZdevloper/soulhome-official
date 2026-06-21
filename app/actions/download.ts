@@ -17,12 +17,27 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
     if (!success) throw new Error("Too many download attempts. Please wait a few minutes.")
 
     // 2. Check Subscription
-    const { data: subscription } = await supabase
+    let { data: subscription } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .single()
+
+    const { data: profile } = await supabase.from('profiles').select('email, is_admin').eq('id', user.id).single()
+
+    if (!subscription && profile?.is_admin) {
+        const startOfMonth = new Date()
+        startOfMonth.setDate(1)
+        startOfMonth.setHours(0, 0, 0, 0)
+        subscription = {
+            status: 'active',
+            downloads_used: 0,
+            downloads_limit: 9999,
+            current_period_start: startOfMonth.toISOString(),
+            current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
+        } as any
+    }
 
     if (!subscription) throw new Error("No active subscription")
 
@@ -36,17 +51,20 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
     const fileId = getFileIdFromUrl(resourceUrl)
     if (!fileId) throw new Error("Invalid resource URL configuration")
 
-    // Fetch user email for Drive sharing
-    const { data: profile } = await supabase.from('profiles').select('email').eq('id', user.id).single()
     if (!profile?.email) throw new Error("User email not found")
 
-    // 4. Check for Existing Download Record
-    const { data: existingDownload } = await supabase
-        .from('downloads')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('resource_id', resourceId)
-        .single()
+    // 4. Check for Existing Download Record THIS billing cycle
+    let existingDownload = null
+    if (subscription?.current_period_start) {
+        const { data } = await supabase
+            .from('downloads')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('resource_id', resourceId)
+            .eq('billing_period_start', subscription.current_period_start)
+            .single()
+        existingDownload = data
+    }
 
     // 4.5. If NEW DOWNLOAD, Check Limit before granting access
     if (!existingDownload) {

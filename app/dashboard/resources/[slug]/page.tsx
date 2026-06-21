@@ -29,13 +29,33 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
     redirect("/auth/login")
   }
 
+  // Get profile to check admin status
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
   // Check subscription status
-  const { data: subscription } = await supabase
+  let { data: subscription } = await supabase
     .from('subscriptions')
     .select('*, downloads_used, downloads_limit')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
+
+  if (!subscription && profile?.is_admin) {
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+    subscription = {
+      status: 'active',
+      downloads_used: 0,
+      downloads_limit: 9999,
+      current_period_start: startOfMonth.toISOString(),
+      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
+    } as any
+  }
 
   const downloadsUsed = subscription?.downloads_used ?? 0
   const downloadsLimit = subscription?.downloads_limit ?? 3
@@ -53,13 +73,18 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
     notFound()
   }
 
-  // Check if already downloaded
-  const { data: existingDownload } = await supabase
-    .from('downloads')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('resource_id', resource.id)
-    .single()
+  // Check if already downloaded this billing cycle
+  let existingDownload = null
+  if (subscription?.current_period_start) {
+    const { data } = await supabase
+      .from('downloads')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('resource_id', resource.id)
+      .eq('billing_period_start', subscription.current_period_start)
+      .single()
+    existingDownload = data
+  }
 
   const typeIcons = {
     pdf: FileText,

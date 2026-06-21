@@ -85,8 +85,32 @@ export async function POST(request: Request) {
           const oldStartMs = existingSub.current_period_start ? new Date(existingSub.current_period_start).getTime() : 0
           const newStartMs = currentPeriodStart ? currentPeriodStart * 1000 : 0
 
-          // If the new start time is greater than the old start time, it is a renewal rollover
           const isRollover = oldStartMs > 0 && newStartMs > oldStartMs
+
+          if (isRollover && existingSub.user_id) {
+            const newPeriodStartISO = toISO(currentPeriodStart, 'start')
+            const { data: oldDownloads } = await supabase
+              .from('downloads')
+              .select('id, drive_permission_id, drive_file_id')
+              .eq('user_id', existingSub.user_id)
+              .not('billing_period_start', 'eq', newPeriodStartISO)
+              .not('drive_permission_id', 'is', null)
+
+            if (oldDownloads && oldDownloads.length > 0) {
+              console.log(`[Webhook] Revoking ${oldDownloads.length} old Drive permissions for user ${existingSub.user_id} upon renewal...`)
+              for (const d of oldDownloads) {
+                if (d.drive_permission_id && d.drive_file_id) {
+                  try {
+                    await revokeFolderAccess(d.drive_permission_id, d.drive_file_id)
+                  } catch (err) {
+                    console.error(`[Webhook] Failed to revoke old Drive access ${d.drive_file_id}:`, err)
+                  }
+                }
+              }
+              const oldDownloadIds = oldDownloads.map(d => d.id)
+              await supabase.from('downloads').update({ drive_permission_id: null }).in('id', oldDownloadIds)
+            }
+          }
 
           const updateData = {
             ...subscriptionData,
@@ -231,12 +255,45 @@ export async function POST(request: Request) {
             (invoice as any).subscription as string
           )
 
+          const newPeriodStart = new Date((subscription as any).current_period_start * 1000).toISOString()
+          const newPeriodEnd = new Date((subscription as any).current_period_end * 1000).toISOString()
+
+          const { data: subData } = await supabase
+            .from('subscriptions')
+            .select('user_id, current_period_start')
+            .eq('stripe_subscription_id', subscription.id)
+            .single()
+
+          if (subData?.user_id && new Date(subData.current_period_start).getTime() !== new Date(newPeriodStart).getTime()) {
+            const { data: oldDownloads } = await supabase
+              .from('downloads')
+              .select('id, drive_permission_id, drive_file_id')
+              .eq('user_id', subData.user_id)
+              .not('billing_period_start', 'eq', newPeriodStart)
+              .not('drive_permission_id', 'is', null)
+
+            if (oldDownloads && oldDownloads.length > 0) {
+              console.log(`[Webhook] Revoking ${oldDownloads.length} old Drive permissions for user ${subData.user_id} upon renewal...`)
+              for (const d of oldDownloads) {
+                if (d.drive_permission_id && d.drive_file_id) {
+                  try {
+                    await revokeFolderAccess(d.drive_permission_id, d.drive_file_id)
+                  } catch (err) {
+                    console.error(`[Webhook] Failed to revoke old Drive access ${d.drive_file_id}:`, err)
+                  }
+                }
+              }
+              const oldDownloadIds = oldDownloads.map(d => d.id)
+              await supabase.from('downloads').update({ drive_permission_id: null }).in('id', oldDownloadIds)
+            }
+          }
+
           await supabase
             .from('subscriptions')
             .update({
               status: subscription.status,
-              current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-              current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+              current_period_start: newPeriodStart,
+              current_period_end: newPeriodEnd,
               downloads_used: 0, // Reset download counter for the new billing period
             })
             .eq('stripe_subscription_id', subscription.id)

@@ -37,7 +37,15 @@ export default async function DashboardLayout({
     .order('created_at', { ascending: false })
     .limit(1)
 
-  const subscription = subscriptions?.[0] || null
+  let subscription = subscriptions?.[0] || null
+
+  if (!subscription && profile?.is_admin) {
+    subscription = {
+      status: 'active',
+      cancel_at_period_end: false,
+      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString()
+    } as any
+  }
 
   // Also check for past_due subscriptions
   const { data: pastDueSub } = await supabase

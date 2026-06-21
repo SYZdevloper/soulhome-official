@@ -23,11 +23,17 @@ export default async function DashboardPage() {
 
   // Parallelize all data fetching
   const [
+    { data: profile },
     { data: subscriptions },
     { data: recentDownloads, count: downloadCount },
     { pdfCount, audioCount, videoCount },
     recentResources
   ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single(),
     supabase
       .from('subscriptions')
       .select('downloads_used, downloads_limit, current_period_end')
@@ -46,7 +52,16 @@ export default async function DashboardPage() {
     getRecentResources()
   ])
 
-  const subscription = subscriptions?.[0] || null
+  let subscription = subscriptions?.[0] || null
+
+  if (!subscription && profile?.is_admin) {
+    subscription = {
+      downloads_used: 0,
+      downloads_limit: 9999,
+      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
+      status: 'active'
+    } as any
+  }
 
   const downloadsUsed = subscription?.downloads_used ?? 0
   const downloadsLimit = subscription?.downloads_limit ?? 3
