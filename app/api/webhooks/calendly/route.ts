@@ -129,7 +129,7 @@ export async function POST(req: Request) {
 
             try {
                 await resend.emails.send({
-                    from: 'Soulhome <noreply@soulhomelove.com>',
+                    from: 'Soul Home <hello@soulhomelove.com>',
                     to: email,
                     subject: `Your Purchase Confirmation: ${matchedResource.title}`,
                     html: `
