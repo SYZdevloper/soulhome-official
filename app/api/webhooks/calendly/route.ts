@@ -19,11 +19,11 @@ export async function POST(req: Request) {
             const email = invitee.email?.toLowerCase();
             const name = invitee.name;
             const eventTypeUrl = invitee.event?.split('/events/')[0] || invitee.event; // The Calendly Event Type URL/URI
-            
+
             // In Calendly payload, the event URI or tracking might be in different fields
             // For this implementation, we will assume we match by calendly_url in our DB
             // Alternatively, admin can set the calendly_url to exactly match the Calendly event link
-            
+
             console.log(`[Calendly Webhook] Processing purchase for ${email}`);
 
             if (!email) {
@@ -42,14 +42,14 @@ export async function POST(req: Request) {
             }
 
             const matchedResource = resources.find(r => {
-                 const dbUrl = r.calendly_url?.toLowerCase().replace(/\/$/, '') || '';
-                 const payloadString = JSON.stringify(body).toLowerCase();
-                 return dbUrl.length > 5 && payloadString.includes(dbUrl);
+                const dbUrl = r.calendly_url?.toLowerCase().replace(/\/$/, '') || '';
+                const payloadString = JSON.stringify(body).toLowerCase();
+                return dbUrl.length > 5 && payloadString.includes(dbUrl);
             });
 
             if (!matchedResource) {
-                 console.error("Could not match the incoming Calendly event to any resource. Make sure the calendly_url is set correctly in the database.");
-                 return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
+                console.error("Could not match the incoming Calendly event to any resource. Make sure the calendly_url is set correctly in the database.");
+                return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
             }
 
             const resourceId = matchedResource.id;
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
                 .from('profiles')
                 .select('id')
                 .eq('email', email);
-                
+
             if (existingProfiles && existingProfiles.length > 0) {
                 userId = existingProfiles[0].id;
                 console.log(`User already exists: ${userId}`);
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
                     console.error("Failed to create user:", authErr);
                     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
                 }
-                
+
                 userId = authData.user.id;
                 console.log(`Created new user: ${userId}`);
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
                 console.error("Failed to grant access:", purchaseError);
                 return NextResponse.json({ error: 'Failed to grant access' }, { status: 500 });
             }
-            
+
             console.log(`Access granted to ${email} for resource ${resourceId} in database.`);
 
             // 4. Grant Access in Google Drive
