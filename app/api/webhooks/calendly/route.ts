@@ -18,8 +18,6 @@ export async function POST(req: Request) {
             const invitee = body.payload;
             const email = invitee.email?.toLowerCase();
             const name = invitee.name;
-            const eventTypeUrl = invitee.event?.split('/events/')[0] || invitee.event; // The Calendly Event Type URL/URI
-
             // In Calendly payload, the event URI or tracking might be in different fields
             // For this implementation, we will assume we match by calendly_url in our DB
             // Alternatively, admin can set the calendly_url to exactly match the Calendly event link
