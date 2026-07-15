@@ -35,7 +35,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
                             <li style="margin-bottom: 10px;">Connect with our community.</li>
                         </ul>
                     </div>
-                    <a href="https://soulhomelove.com/dashboard/resources" style="display: inline-block; background: #6d28d9; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Browse Resources</a>
+                    <a href="https://soulhomelove.com/kundalini-school" style="display: inline-block; background: #6d28d9; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Browse Resources</a>
                     <p style="margin-top: 40px; font-size: 14px; color: #666;">If you have any questions, just reply to this email!</p>
                 </div>
             `
