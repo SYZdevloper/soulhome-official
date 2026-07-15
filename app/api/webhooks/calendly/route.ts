@@ -31,7 +31,33 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Missing email' }, { status: 400 });
             }
 
-            // 1. Find the resource that matches this Calendly link
+            // 1. Fetch the actual Event from Calendly to get the Event Type
+            const eventRes = await fetch(invitee.event, {
+                headers: { Authorization: `Bearer ${process.env.CALENDLY_PAT}` }
+            });
+            const eventData = await eventRes.json();
+            const eventTypeUrl = eventData?.resource?.event_type;
+
+            if (!eventTypeUrl) {
+                console.error("Could not fetch event type from Calendly");
+                return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
+            }
+
+            // 2. Fetch the Event Type to get the actual scheduling URL (e.g. https://calendly.com/...)
+            const typeRes = await fetch(eventTypeUrl, {
+                headers: { Authorization: `Bearer ${process.env.CALENDLY_PAT}` }
+            });
+            const typeData = await typeRes.json();
+            const schedulingUrl = typeData?.resource?.scheduling_url;
+
+            if (!schedulingUrl) {
+                console.error("Could not fetch scheduling URL from Calendly");
+                return NextResponse.json({ error: 'Missing scheduling URL' }, { status: 400 });
+            }
+
+            console.log(`Matched Calendly scheduling URL: ${schedulingUrl}`);
+
+            // 3. Find the resource that matches this Calendly link
             const { data: resources, error: resourceError } = await supabase
                 .from('resources')
                 .select('id, title, calendly_url, file_url')
@@ -43,14 +69,14 @@ export async function POST(req: Request) {
             }
 
             const matchedResource = resources.find(r => {
-                const dbUrl = r.calendly_url?.toLowerCase().replace(/\/$/, '') || '';
-                const payloadString = JSON.stringify(body).toLowerCase();
-                return dbUrl.length > 5 && payloadString.includes(dbUrl);
+                 const dbUrl = r.calendly_url?.toLowerCase().replace(/\/$/, '') || '';
+                 const incomingUrl = schedulingUrl.toLowerCase().replace(/\/$/, '');
+                 return dbUrl === incomingUrl || incomingUrl.includes(dbUrl);
             });
 
             if (!matchedResource) {
-                console.error("Could not match the incoming Calendly event to any resource. Make sure the calendly_url is set correctly in the database.");
-                return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
+                 console.error(`Could not match Calendly URL ${schedulingUrl} to any database resource.`);
+                 return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
             }
 
             const resourceId = matchedResource.id;
