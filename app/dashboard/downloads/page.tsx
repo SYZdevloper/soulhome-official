@@ -89,7 +89,7 @@ export default async function DownloadsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/dashboard/resources/${resource.slug}`}>
+                      <Link href={`/kundalini-school/${resource.slug}`}>
                         View
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Link>

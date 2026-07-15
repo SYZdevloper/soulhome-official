@@ -108,7 +108,7 @@ export async function LatestResources() {
                       )}
                     </div>
                     <Button size="sm" className="rounded-full px-4" asChild>
-                      <Link href={`/resources/${resource.slug}`}>
+                      <Link href={`/kundalini-school/${resource.slug}`}>
                         View
                       </Link>
                     </Button>

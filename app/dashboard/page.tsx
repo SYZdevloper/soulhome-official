@@ -106,7 +106,7 @@ export default async function DashboardPage() {
               {recentResources.map((resource) => (
                 <Link
                   key={resource.id}
-                  href={`/resources/${resource.slug}`}
+                  href={`/kundalini-school/${resource.slug}`}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:border-primary/20"
                 >
                   <div className="aspect-[16/10] overflow-hidden bg-muted relative">
