@@ -18,9 +18,6 @@ interface EmailClientProps {
   audienceCounts: {
     global: number
     all_registered: number
-    active: number
-    expired: number
-    free: number
     waitlist_all: number
     waitlist_yes: number
     waitlist_no: number
@@ -106,9 +103,6 @@ export function EmailClient({ emailsSentToday, audienceCounts }: EmailClientProp
                     <SelectGroup>
                       <SelectLabel>Registered Users</SelectLabel>
                       <SelectItem value="all_registered">All Registered ({audienceCounts.all_registered})</SelectItem>
-                      <SelectItem value="active">Active Subscribers ({audienceCounts.active})</SelectItem>
-                      <SelectItem value="expired">Expired/Canceled ({audienceCounts.expired})</SelectItem>
-                      <SelectItem value="free">Free Users ({audienceCounts.free})</SelectItem>
                     </SelectGroup>
                     <SelectGroup>
                       <SelectLabel>Waitlist</SelectLabel>

@@ -11,6 +11,7 @@ import Image from "next/image"
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/kundalini-school", label: "Kundalini School" },
   { href: "/services", label: "Services" },
   { href: "/#testimonials", label: "Testimonials" },
   { href: "/blog", label: "Blog" },
@@ -111,7 +112,7 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
                         </Button>
                       )}
                       <Button asChild className="w-full bg-primary/5 border border-primary/20 text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/40 hover:border-primary transition-all duration-500">
-                        <Link href="/dashboard" onClick={() => setOpen(false)}>Kundalini School</Link>
+                        <Link href="/dashboard" onClick={() => setOpen(false)}>Member Portal</Link>
                       </Button>
                     </>
                   ) : (
@@ -184,7 +185,7 @@ export function Navigation({ isLoggedIn = false, isAdmin = false }: NavigationPr
                     ? "bg-primary/5 border-primary/20 text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/40 hover:border-primary" 
                     : "bg-white/10 border-white/20 text-white hover:bg-white hover:text-primary hover:shadow-lg hover:shadow-white/40 hover:border-white"
                 )}>
-                  <Link href="/dashboard">Kundalini School</Link>
+                  <Link href="/dashboard">Member Portal</Link>
                 </Button>
               </>
             ) : (

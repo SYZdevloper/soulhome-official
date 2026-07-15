@@ -30,39 +30,12 @@ export async function getUserProfile() {
   return profile
 }
 
-export async function getUserSubscription() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return null
-  
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .single()
-    
-  return subscription
-}
-
 export async function requireAuth() {
   const user = await getUser()
   if (!user) {
     redirect("/auth/login")
   }
   return user
-}
-
-export async function requireActiveSubscription() {
-  const user = await requireAuth()
-  const subscription = await getUserSubscription()
-  
-  if (!subscription) {
-    redirect("/membership")
-  }
-  
-  return { user, subscription }
 }
 
 export async function requireAdmin() {

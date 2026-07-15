@@ -24,7 +24,6 @@ export default async function DashboardPage() {
   // Parallelize all data fetching
   const [
     { data: profile },
-    { data: subscriptions },
     { data: recentDownloads, count: downloadCount },
     { pdfCount, audioCount, videoCount },
     recentResources
@@ -34,13 +33,6 @@ export default async function DashboardPage() {
       .select('*')
       .eq('id', user.id)
       .single(),
-    supabase
-      .from('subscriptions')
-      .select('downloads_used, downloads_limit, current_period_end')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1),
     // Fetch both the recent downloads and the total count in one query
     supabase
       .from('downloads')
@@ -52,28 +44,10 @@ export default async function DashboardPage() {
     getRecentResources()
   ])
 
-  let subscription = subscriptions?.[0] || null
-
-  if (!subscription && profile?.is_admin) {
-    subscription = {
-      downloads_used: 0,
-      downloads_limit: 9999,
-      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
-      status: 'active'
-    } as any
-  }
-
-  const downloadsUsed = subscription?.downloads_used ?? 0
-  const downloadsLimit = subscription?.downloads_limit ?? 3
-  const downloadsLeft = Math.max(0, downloadsLimit - downloadsUsed)
-  const renewalDate = subscription?.current_period_end
-    ? new Date(subscription.current_period_end).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
-    : null
-
   const stats = [
-    { label: "PDF Guides", value: pdfCount || 0, icon: BookOpen, href: "/dashboard/resources?type=pdf", color: "from-blue-500/20 to-indigo-500/10", iconColor: "text-blue-600" },
-    { label: "Audio Meditations", value: audioCount || 0, icon: Headphones, href: "/dashboard/resources?type=audio", color: "from-emerald-500/20 to-teal-500/10", iconColor: "text-emerald-600" },
-    { label: "Video Teachings", value: videoCount || 0, icon: Play, href: "/dashboard/resources?type=video", color: "from-amber-500/20 to-orange-500/10", iconColor: "text-amber-600" },
+    { label: "PDF Guides", value: pdfCount || 0, icon: BookOpen, href: "/kundalini-school?type=pdf", color: "from-blue-500/20 to-indigo-500/10", iconColor: "text-blue-600" },
+    { label: "Audio Meditations", value: audioCount || 0, icon: Headphones, href: "/kundalini-school?type=audio", color: "from-emerald-500/20 to-teal-500/10", iconColor: "text-emerald-600" },
+    { label: "Video Teachings", value: videoCount || 0, icon: Play, href: "/kundalini-school?type=video", color: "from-amber-500/20 to-orange-500/10", iconColor: "text-amber-600" },
     { label: "My Downloads", value: downloadCount || 0, icon: Download, href: "/dashboard/downloads", color: "from-purple-500/20 to-pink-500/10", iconColor: "text-purple-600" },
   ]
 
@@ -93,49 +67,6 @@ export default async function DashboardPage() {
           Continue your spiritual journey with our latest resources and teachings.
         </p>
       </div>
-
-      {/* Download Counter Banner - Slimmer and more modern */}
-      {subscription && (() => {
-        const ratio = Math.min(1, downloadsUsed / downloadsLimit)
-        const isMaxed = downloadsLeft === 0
-        const barWidth = ratio * 100
-        const message = isMaxed
-          ? "Monthly limit reached"
-          : `${downloadsLeft} unlocks left this month`
-        
-        return (
-          <div className="group relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-r from-primary/5 via-background to-background p-6 shadow-sm">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
-                  <Download className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">{message}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Next reset: <span className="text-primary/80 font-medium">{renewalDate || 'Checking...'}</span>
-                  </p>
-                </div>
-              </div>
-              
-              <div className="w-full md:w-72 space-y-2">
-                <div className="flex justify-between text-xs font-medium">
-                  <span className="text-muted-foreground">Quota Usage</span>
-                  <span className="text-primary">{downloadsUsed} / {downloadsLimit}</span>
-                </div>
-                <div className="h-2 rounded-full bg-primary/5 overflow-hidden">
-                  <div 
-                    className="h-full rounded-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-1000 ease-out" 
-                    style={{ width: `${barWidth}%` }} 
-                  />
-                </div>
-              </div>
-            </div>
-            {/* Subtle background glow */}
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 h-full w-1/3 bg-primary/5 blur-3xl pointer-events-none" />
-          </div>
-        )
-      })()}
 
       {/* Stats Grid - Bento Style */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -164,7 +95,7 @@ export default async function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-2xl font-bold text-foreground">New Discoveries</h2>
             <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/5" asChild>
-              <Link href="/dashboard/resources" className="flex items-center gap-2">
+              <Link href="/kundalini-school" className="flex items-center gap-2">
                 Explore Library <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -175,7 +106,7 @@ export default async function DashboardPage() {
               {recentResources.map((resource) => (
                 <Link
                   key={resource.id}
-                  href={`/dashboard/resources/${resource.slug}`}
+                  href={`/resources/${resource.slug}`}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:border-primary/20"
                 >
                   <div className="aspect-[16/10] overflow-hidden bg-muted relative">

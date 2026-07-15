@@ -37,24 +37,13 @@ export default async function AdminEmailPage() {
 
   // Calculate Audience Counts
   const { data: profiles } = await supabaseAdmin.from("profiles").select("id, email")
-  const { data: subscriptions } = await supabaseAdmin.from("subscriptions").select("user_id, status")
   const { data: waitlist } = await supabaseAdmin.from("waitlist").select("email, wants_reminder")
 
-  const subsByUser = new Map()
-  subscriptions?.forEach(sub => subsByUser.set(sub.user_id, sub.status))
-
-  let activeCount = 0
-  let expiredCount = 0
-  let freeCount = 0
   let registeredCount = 0
 
   profiles?.forEach(p => {
     if (!p.email) return
     registeredCount++
-    const status = subsByUser.get(p.id)
-    if (status === "active") activeCount++
-    else if (status && status !== "active") expiredCount++
-    else if (!status) freeCount++
   })
 
   let waitlistAllCount = 0
@@ -77,9 +66,6 @@ export default async function AdminEmailPage() {
   const audienceCounts = {
     global: globalCount,
     all_registered: registeredCount,
-    active: activeCount,
-    expired: expiredCount,
-    free: freeCount,
     waitlist_all: waitlistAllCount,
     waitlist_yes: waitlistYesCount,
     waitlist_no: waitlistNoCount

@@ -19,16 +19,7 @@ interface Profile {
   created_at: string
 }
 
-interface Subscription {
-  id: string
-  user_id: string
-  status: string
-  current_period_start: string | null
-  current_period_end: string | null
-  stripe_customer_id: string | null
-  stripe_subscription_id: string | null
-  created_at: string
-}
+
 
 interface Download {
   id: string
@@ -41,31 +32,36 @@ interface Download {
   } | null
 }
 
+interface Purchase {
+  id: string
+  user_id: string
+  created_at: string
+  resource: {
+    id: string
+    title: string
+    type: string
+  } | null
+}
+
 type TimeRange = 'today' | 'yesterday' | '7d' | '28d' | '3m' | '1y'
 
 export function MembersClient({ 
   profiles, 
-  subscriptions, 
-  downloads 
+  downloads,
+  purchases 
 }: { 
   profiles: Profile[]
-  subscriptions: Subscription[]
   downloads: Download[]
+  purchases: Purchase[]
 }) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedUserForDownloads, setSelectedUserForDownloads] = useState<Profile | null>(null)
+  const [selectedUserForPurchases, setSelectedUserForPurchases] = useState<Profile | null>(null)
   const [timeRange, setTimeRange] = useState<TimeRange>("28d")
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 15
 
-  // Map subscriptions & downloads by user
-  const subMap = useMemo(() => {
-    return subscriptions.reduce((acc, sub) => {
-      acc[sub.user_id] = sub
-      return acc
-    }, {} as Record<string, Subscription>)
-  }, [subscriptions])
+  // Map downloads & purchases by user
 
   const userDownloadsMap = useMemo(() => {
     return downloads.reduce((acc, d) => {
@@ -75,9 +71,17 @@ export function MembersClient({
     }, {} as Record<string, Download[]>)
   }, [downloads])
 
+  const userPurchasesMap = useMemo(() => {
+    return purchases.reduce((acc, p) => {
+      if (!acc[p.user_id]) acc[p.user_id] = []
+      acc[p.user_id].push(p)
+      return acc
+    }, {} as Record<string, Purchase[]>)
+  }, [purchases])
+
   // Chart Data Preparation
   const chartData = useMemo(() => {
-    const data: { dateStr: string, dateObj: Date, signups: number, subscriptions: number }[] = []
+    const data: { dateStr: string, dateObj: Date, signups: number, purchases: number }[] = []
     const now = new Date()
     
     if (timeRange === 'today') {
@@ -85,25 +89,25 @@ export function MembersClient({
       for (let i = 0; i <= now.getHours(); i++) {
         const d = new Date(now)
         d.setHours(i, 0, 0, 0)
-        data.push({ dateStr: format(d, 'ha'), dateObj: d, signups: 0, subscriptions: 0 })
+        data.push({ dateStr: format(d, 'ha'), dateObj: d, signups: 0, purchases: 0 })
       }
     } else if (timeRange === 'yesterday') {
       const yest = subDays(now, 1)
       for (let i = 0; i <= 23; i++) {
         const d = new Date(yest)
         d.setHours(i, 0, 0, 0)
-        data.push({ dateStr: format(d, 'ha'), dateObj: d, signups: 0, subscriptions: 0 })
+        data.push({ dateStr: format(d, 'ha'), dateObj: d, signups: 0, purchases: 0 })
       }
     } else if (timeRange === '7d' || timeRange === '28d') {
       const days = timeRange === '7d' ? 7 : 28
       for (let i = days - 1; i >= 0; i--) {
         const d = startOfDay(subDays(now, i))
-        data.push({ dateStr: format(d, 'MMM dd'), dateObj: d, signups: 0, subscriptions: 0 })
+        data.push({ dateStr: format(d, 'MMM dd'), dateObj: d, signups: 0, purchases: 0 })
       }
     } else if (timeRange === '3m') {
       for (let i = 89; i >= 0; i--) {
         const d = startOfDay(subDays(now, i))
-        data.push({ dateStr: format(d, 'MMM dd'), dateObj: d, signups: 0, subscriptions: 0 })
+        data.push({ dateStr: format(d, 'MMM dd'), dateObj: d, signups: 0, purchases: 0 })
       }
     } else if (timeRange === '1y') {
       const currentMonth = now.getMonth()
@@ -116,7 +120,7 @@ export function MembersClient({
           y -= 1
         }
         const d = new Date(y, m, 1)
-        data.push({ dateStr: format(d, 'MMM yyyy'), dateObj: d, signups: 0, subscriptions: 0 })
+        data.push({ dateStr: format(d, 'MMM yyyy'), dateObj: d, signups: 0, purchases: 0 })
       }
     }
 
@@ -139,49 +143,38 @@ export function MembersClient({
       if (index !== -1) data[index].signups++
     })
 
-    subscriptions.forEach(s => {
-      // Use created_at for new subscription
-      const sDateStr = s.created_at || s.current_period_start
-      if (!sDateStr) return
-      const sDate = new Date(sDateStr)
+    purchases.forEach(p => {
+      if (!p.created_at) return
+      const pDate = new Date(p.created_at)
       let index = -1
       if (timeRange === 'today' || timeRange === 'yesterday') {
-        index = data.findIndex(d => isSameHour(d.dateObj, sDate))
+        index = data.findIndex(d => isSameHour(d.dateObj, pDate))
       } else if (timeRange === '1y') {
-        index = data.findIndex(d => isSameMonth(d.dateObj, sDate))
+        index = data.findIndex(d => isSameMonth(d.dateObj, pDate))
       } else {
-        index = data.findIndex(d => isSameDay(d.dateObj, sDate))
+        index = data.findIndex(d => isSameDay(d.dateObj, pDate))
       }
-      if (index !== -1) data[index].subscriptions++
+      if (index !== -1) data[index].purchases++
     })
 
     return data
-  }, [profiles, subscriptions, timeRange])
+  }, [profiles, purchases, timeRange])
 
   // Filtered profiles for table
   const filteredProfiles = useMemo(() => {
     return profiles.filter(p => {
-      const sub = subMap[p.id]
       const matchesSearch = 
         (p.full_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
         p.email.toLowerCase().includes(searchQuery.toLowerCase())
 
-      if (!matchesSearch) return false
-
-      if (statusFilter === "all") return true
-      if (statusFilter === "active") return sub?.status === "active"
-      if (statusFilter === "canceled") return sub?.status === "canceled"
-      if (statusFilter === "past_due") return sub?.status === "past_due"
-      if (statusFilter === "free") return !sub || sub.status === "inactive"
-
-      return true
+      return matchesSearch
     })
-  }, [profiles, searchQuery, statusFilter, subMap])
+  }, [profiles, searchQuery])
 
-  // Reset to page 1 when search or filters change
+  // Reset to page 1 when search changes
   useMemo(() => {
     setCurrentPage(1)
-  }, [searchQuery, statusFilter])
+  }, [searchQuery])
 
   const totalPages = Math.ceil(filteredProfiles.length / ITEMS_PER_PAGE)
   const paginatedProfiles = filteredProfiles.slice(0, currentPage * ITEMS_PER_PAGE)
@@ -197,7 +190,7 @@ export function MembersClient({
             </div>
             <div>
               <CardTitle className="font-serif text-xl">Growth Analytics</CardTitle>
-              <CardDescription>Signups and new subscriptions over time</CardDescription>
+              <CardDescription>Signups and new purchases over time</CardDescription>
             </div>
           </div>
           <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
@@ -259,8 +252,8 @@ export function MembersClient({
                 />
                 <Area 
                   type="monotone" 
-                  dataKey="subscriptions" 
-                  name="New Paid Subscriptions"
+                  dataKey="purchases" 
+                  name="New Purchases"
                   stroke="#10b981" 
                   strokeWidth={3}
                   fillOpacity={1} 
@@ -286,25 +279,6 @@ export function MembersClient({
               />
             </div>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { id: "all", label: "All Explorers" },
-              { id: "active", label: "Active" },
-              { id: "free", label: "Free" },
-              { id: "canceled", label: "Canceled" }
-            ].map(filter => (
-              <Button
-                key={filter.id}
-                variant={statusFilter === filter.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter(filter.id)}
-                className={`text-xs h-8 ${statusFilter === filter.id ? 'bg-primary text-primary-foreground' : 'bg-white'}`}
-              >
-                {filter.label}
-              </Button>
-            ))}
-          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -312,17 +286,16 @@ export function MembersClient({
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/30 border-b border-border/40">
               <tr>
                 <th className="px-6 py-4 font-bold tracking-wider">Explorer</th>
-                <th className="px-6 py-4 font-bold tracking-wider">Status</th>
-                <th className="px-6 py-4 font-bold tracking-wider">Joined / Renews</th>
+                <th className="px-6 py-4 font-bold tracking-wider">Joined</th>
+                <th className="px-6 py-4 font-bold tracking-wider text-center">Purchases</th>
                 <th className="px-6 py-4 font-bold tracking-wider text-center">Transmissions</th>
-                <th className="px-6 py-4 font-bold tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
               {paginatedProfiles.length > 0 ? (
                 paginatedProfiles.map(profile => {
-                  const sub = subMap[profile.id]
                   const userDownloads = userDownloadsMap[profile.id] || []
+                  const userPurchases = userPurchasesMap[profile.id] || []
                   
                   return (
                     <tr key={profile.id} className="bg-white/10 hover:bg-white/40 transition-colors">
@@ -342,35 +315,66 @@ export function MembersClient({
                       </td>
                       
                       <td className="px-6 py-4">
-                        {sub?.status === 'active' ? (
-                          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] uppercase font-bold tracking-widest leading-none">
-                            <CreditCard className="mr-1 h-3 w-3" /> Active
-                          </Badge>
-                        ) : sub?.status === 'canceled' ? (
-                          <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] uppercase font-bold tracking-widest leading-none">
-                            <XCircle className="mr-1 h-3 w-3" /> Canceled
-                          </Badge>
-                        ) : sub?.status === 'past_due' ? (
-                          <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px] uppercase font-bold tracking-widest leading-none">
-                            <AlertCircle className="mr-1 h-3 w-3" /> Past Due
-                          </Badge>
-                        ) : (
-                          <Badge variant="ghost" className="bg-secondary/50 text-muted-foreground text-[10px] uppercase font-bold tracking-widest leading-none">
-                            Free Tier
-                          </Badge>
-                        )}
-                      </td>
-
-                      <td className="px-6 py-4">
                         <div className="flex flex-col gap-1 text-xs">
                           <span className="text-muted-foreground">Joined: <span className="font-semibold text-foreground">{format(new Date(profile.created_at), 'MMM d, yyyy')}</span></span>
-                          {sub?.current_period_end && (
-                            <span className="text-muted-foreground">
-                              {sub.status === 'canceled' ? 'Ends: ' : 'Renews: '} 
-                              <span className="font-semibold text-foreground">{format(new Date(sub.current_period_end), 'MMM d, yyyy')}</span>
-                            </span>
-                          )}
                         </div>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              className={`h-8 px-3 rounded-full text-xs font-bold ${userPurchases.length > 0 ? 'bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20' : 'text-muted-foreground hover:bg-secondary'}`}
+                              onClick={() => setSelectedUserForPurchases(profile)}
+                            >
+                              <CreditCard className="mr-1.5 h-3.5 w-3.5" />
+                              {userPurchases.length}
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-full sm:max-w-md border-l border-border/40 bg-slate-50/95 backdrop-blur-xl">
+                            <SheetHeader className="mb-6">
+                              <SheetTitle className="font-serif text-2xl flex items-center gap-2">
+                                <CreditCard className="h-6 w-6 text-indigo-600" />
+                                Purchase History
+                              </SheetTitle>
+                              <SheetDescription>
+                                Resource purchases for {selectedUserForPurchases?.full_name || selectedUserForPurchases?.email}
+                              </SheetDescription>
+                            </SheetHeader>
+                            
+                            <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+                              {userPurchases.length > 0 ? (
+                                <div className="space-y-3">
+                                  {userPurchases.map((p) => (
+                                    <div key={p.id} className="bg-white border border-border/50 rounded-xl p-4 shadow-sm flex items-start gap-4 transition-all hover:border-indigo-500/30">
+                                      <div className="mt-0.5 h-8 w-8 rounded-lg bg-indigo-500/5 flex items-center justify-center text-indigo-600 shrink-0">
+                                        {p.resource?.type === 'audio' ? <Music className="h-4 w-4" /> :
+                                         p.resource?.type === 'video' ? <Video className="h-4 w-4" /> :
+                                         <FileText className="h-4 w-4" />}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-bold text-foreground mb-1 leading-tight">{p.resource?.title || 'Unknown Resource'}</h4>
+                                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+                                          <Calendar className="h-3 w-3" />
+                                          {format(new Date(p.created_at), 'MMM d, yyyy • h:mm a')}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                  <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+                                    <CreditCard className="h-8 w-8 text-muted-foreground/50" />
+                                  </div>
+                                  <h3 className="text-lg font-bold text-foreground">No Purchases</h3>
+                                  <p className="text-sm text-muted-foreground max-w-[250px] mt-1">This explorer hasn't purchased any resources yet.</p>
+                                </div>
+                              )}
+                            </div>
+                          </SheetContent>
+                        </Sheet>
                       </td>
 
                       <td className="px-6 py-4 text-center">
@@ -429,24 +433,12 @@ export function MembersClient({
                           </SheetContent>
                         </Sheet>
                       </td>
-
-                      <td className="px-6 py-4 text-right">
-                        {sub?.stripe_customer_id ? (
-                          <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-white" asChild>
-                            <a href={`https://dashboard.stripe.com/customers/${sub.stripe_customer_id}`} target="_blank" rel="noopener noreferrer">
-                              View in Stripe <ChevronRight className="ml-1 h-3 w-3" />
-                            </a>
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">No billing profile</span>
-                        )}
-                      </td>
                     </tr>
                   )
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                     <Users className="h-8 w-8 mx-auto mb-3 opacity-20" />
                     <p className="font-medium">No explorers found matching your filters.</p>
                   </td>

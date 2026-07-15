@@ -1,6 +1,5 @@
 import Link from "next/link"
 import Image from "next/image"
-import { SubscribeDialog } from "../membership/subscribe-dialog"
 
 export default function ServicesPage() {
     return (
@@ -64,19 +63,14 @@ export default function ServicesPage() {
                             <h3 className="font-serif text-2xl italic text-primary">Kundalini School</h3>
                             <div className="w-full h-[1px] bg-primary/20"></div>
                             <p className="text-muted-foreground leading-relaxed text-balance text-sm max-w-sm mx-auto flex-grow">
-                                A monthly membership to an online portal on this website, that allows you to access self-healing resources to enhance your life and spiritual journey through integration practices. If you resonate with my instagram content, this is a level up, and a deeper connection to your soul.
+                                A sacred online portal providing access to self-healing resources that enhance your spiritual journey through profound integration practices. If you resonate with my Instagram content, this is your next step toward a deeper connection with your soul.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2 mt-auto">
-                                <SubscribeDialog 
-                                    planId="monthly-membership"
-                                    buttonText="Become a Member"
-                                    className="px-6 py-2 bg-primary text-white text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/90 transition-all active:scale-95 text-center"
-                                />
                                 <Link 
-                                    href="/membership" 
-                                    className="px-6 py-2 border border-primary text-primary text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/5 transition-all text-center"
+                                    href="/kundalini-school" 
+                                    className="px-6 py-2 bg-primary text-white text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/90 transition-all active:scale-95 text-center"
                                 >
-                                    Learn more
+                                    Explore Library
                                 </Link>
                             </div>
                         </div>

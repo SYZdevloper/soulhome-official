@@ -47,6 +47,8 @@ export interface Resource {
   type: 'pdf' | 'audio' | 'video'
   file_url: string
   thumbnail_url: string | null
+  calendly_url: string | null
+  price: number | null
   duration_minutes: number | null
   file_size_bytes: number | null
   category_id: string | null

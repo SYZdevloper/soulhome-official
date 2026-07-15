@@ -6,7 +6,7 @@ import { createClient } from "@/lib/server"
 export const dynamic = "force-dynamic"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, Library, Download, Settings, LogOut, Shield, AlertTriangle } from "lucide-react"
+import { LayoutDashboard, Library, Download, Settings, LogOut, Shield } from "lucide-react"
 import { signOut } from "@/app/actions/auth"
 import Image from "next/image"
 
@@ -28,38 +28,10 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
-  // Get user's most recent active subscription
-  const { data: subscriptions } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(1)
-
-  let subscription = subscriptions?.[0] || null
-
-  if (!subscription && profile?.is_admin) {
-    subscription = {
-      status: 'active',
-      cancel_at_period_end: false,
-      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString()
-    } as any
-  }
-
-  // Also check for past_due subscriptions
-  const { data: pastDueSub } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'past_due')
-    .single()
-
   const navLinks = [
-    { href: "/", label: "Home", icon: LayoutDashboard }, // Using LayoutDashboard temporarily for Home
+    { href: "/", label: "Home", icon: LayoutDashboard },
     { href: "/dashboard", label: "Kundalini School", icon: LayoutDashboard },
-    { href: "/services", label: "Services", icon: Library }, // Using Library temporarily for Services
-    { href: "/dashboard/resources", label: "Resources", icon: Library },
+    { href: "/services", label: "Services", icon: Library },
     { href: "/dashboard/downloads", label: "My Downloads", icon: Download },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ]
@@ -90,48 +62,6 @@ export default async function DashboardLayout({
                     </Link>
                   ))}
 
-                  {/* Subscription Status Mobile */}
-                  <div className="mt-8 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 shadow-sm">
-                    <h3 className="text-sm font-semibold text-foreground">Subscription</h3>
-                    {subscription ? (
-                      <div className="mt-2">
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                          Active
-                        </span>
-                        {subscription.cancel_at_period_end ? (
-                          <p className="mt-2 text-xs text-amber-600 dark:text-amber-500 font-medium">
-                            Ends on: {new Date(subscription.current_period_end).toLocaleDateString()}
-                          </p>
-                        ) : (
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : pastDueSub ? (
-                      <div className="mt-2">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                          <AlertTriangle className="h-3 w-3" />
-                          Payment Failed
-                        </span>
-                        <p className="mt-2 text-xs text-red-600">
-                          Your last payment failed. Please update your payment method.
-                        </p>
-                        <Button size="sm" variant="destructive" className="mt-2 w-full" asChild>
-                          <Link href="/dashboard/settings">Update Payment</Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="mt-2">
-                        <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                          No active subscription
-                        </span>
-                        <Button size="sm" className="mt-2 w-full" asChild>
-                          <Link href="/membership">Subscribe</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
                   {/* User Profile & Actions Mobile */}
                   <div className="mt-8 pt-6 border-t border-border/50 flex flex-col gap-4">
                     <span className="text-sm text-muted-foreground px-2">
@@ -205,49 +135,6 @@ export default async function DashboardLayout({
               </Link>
             ))}
           </nav>
-
-          {/* Subscription Status */}
-          <div className="mt-8 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-foreground">Subscription</h3>
-            {subscription ? (
-              <div className="mt-2">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                  Active
-                </span>
-                {subscription.cancel_at_period_end ? (
-                  <p className="mt-2 text-xs text-amber-600 dark:text-amber-500 font-medium">
-                    Ends on: {new Date(subscription.current_period_end).toLocaleDateString()}
-                  </p>
-                ) : (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            ) : pastDueSub ? (
-              <div className="mt-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                  <AlertTriangle className="h-3 w-3" />
-                  Payment Failed
-                </span>
-                <p className="mt-2 text-xs text-red-600">
-                  Your last payment failed. Please update your payment method.
-                </p>
-                <Button size="sm" variant="destructive" className="mt-2 w-full" asChild>
-                  <Link href="/dashboard/settings">Update Payment</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="mt-2">
-                <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                  No active subscription
-                </span>
-                <Button size="sm" className="mt-2 w-full" asChild>
-                  <Link href="/membership">Subscribe</Link>
-                </Button>
-              </div>
-            )}
-          </div>
         </aside>
 
         {/* Main Content */}

@@ -14,7 +14,7 @@ import {
 import { DecorativeArch } from "@/components/decorative-arch"
 import { DecorativeCircle } from "@/components/decorative-circle"
 import { TestimonialMasonry } from "@/components/testimonial-masonry"
-import { SubscribeDialog } from "./membership/subscribe-dialog"
+import { LatestResources } from "@/components/latest-resources"
 import Image from "next/image"
 
 
@@ -103,11 +103,11 @@ export default function HomePage() {
                   Book a Session
                 </Link>
               </Button>
-              <SubscribeDialog 
-                planId="monthly-membership"
-                buttonText="Become a Member"
-                className="text-lg px-8 py-6 bg-primary/80 backdrop-blur-sm text-white border border-primary/50 hover:bg-primary shadow-xl"
-              />
+              <Button size="lg" asChild className="text-lg px-8 py-6 bg-primary/80 backdrop-blur-sm text-white border border-primary/50 hover:bg-primary shadow-xl">
+                <Link href="/kundalini-school">
+                  Explore Resources
+                </Link>
+              </Button>
               <Button variant="outline" size="lg" asChild className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm text-white border-white/50 hover:bg-white/20 shadow-xl">
                 <Link href="/about">Learn More</Link>
               </Button>
@@ -218,19 +218,14 @@ export default function HomePage() {
                 <h3 className="font-serif text-2xl italic text-primary">Kundalini School</h3>
                 <div className="w-full h-[1px] bg-primary/20"></div>
                 <p className="text-muted-foreground leading-relaxed text-balance text-sm max-w-sm mx-auto flex-grow">
-                  A monthly membership to an online portal on this website, that allows you to access self-healing resources to enhance your life and spiritual journey through integration practices. If you resonate with my instagram content, this is a level up, and a deeper connection to your soul.
+                  A sacred online portal providing access to self-healing resources that enhance your spiritual journey through profound integration practices. If you resonate with my Instagram content, this is your next step toward a deeper connection with your soul.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2 mt-auto">
-                  <SubscribeDialog 
-                    planId="monthly-membership"
-                    buttonText="Become a Member"
-                    className="px-6 py-2 bg-primary text-white text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/90 transition-all active:scale-95 text-center"
-                  />
                   <Link 
-                    href="/membership" 
-                    className="px-6 py-2 border border-primary text-primary text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/5 transition-all text-center"
+                    href="/kundalini-school" 
+                    className="px-6 py-2 bg-primary text-white text-xs uppercase tracking-widest font-bold rounded-full hover:bg-primary/90 transition-all active:scale-95 text-center"
                   >
-                    Learn more
+                    View Resources
                   </Link>
                 </div>
               </div>
@@ -238,6 +233,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Latest Resources Section */}
+      <LatestResources />
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 sm:py-28 bg-background">
@@ -263,13 +261,11 @@ export default function HomePage() {
               Begin Your Transformation Today
             </h2>
             <p className="text-xl text-primary-foreground/90 mb-10">
-              Join our sacred community and start your journey to awakening with just £77 per month.
+              Explore our library of self-paced healing resources and teachings to start your journey.
             </p>
-            <SubscribeDialog 
-              planId="monthly-membership"
-              buttonText="Become a Member"
-              className="text-lg px-8 py-6 bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg"
-            />
+            <Button size="lg" asChild className="text-lg px-8 py-6 bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg rounded-full font-bold uppercase tracking-widest">
+              <Link href="/kundalini-school">Explore Library</Link>
+            </Button>
           </div>
         </div>
       </section>

@@ -17,17 +17,7 @@ export async function GET(
       return new Response("Unauthorized", { status: 401 })
     }
 
-    // 2. Check active subscription
-    const { data: subscription } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single()
 
-    if (!subscription) {
-      return new Response("No active subscription", { status: 403 })
-    }
 
     // 3. Check if they unlocked/downloaded this resource
     const { data: existingDownload } = await supabase

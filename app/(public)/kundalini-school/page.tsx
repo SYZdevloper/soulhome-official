@@ -75,7 +75,7 @@ export default async function ResourcesPage({ searchParams }: ResourcesPageProps
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div>
         <h1 className="font-serif text-3xl font-bold text-foreground">Resource Library</h1>
         <p className="mt-2 text-muted-foreground">
@@ -160,7 +160,7 @@ export default async function ResourcesPage({ searchParams }: ResourcesPageProps
                       )}
                     </div>
                     <Button size="sm" className="rounded-full px-4" asChild>
-                      <Link href={`/dashboard/resources/${resource.slug}`}>
+                      <Link href={`/resources/${resource.slug}`}>
                         View
                       </Link>
                     </Button>
@@ -179,7 +179,7 @@ export default async function ResourcesPage({ searchParams }: ResourcesPageProps
               Try adjusting your filters or check back later for new content.
             </p>
             <Button variant="outline" className="mt-4 bg-transparent" asChild>
-              <Link href="/dashboard/resources">Clear Filters</Link>
+              <Link href="/kundalini-school">Clear Filters</Link>
             </Button>
           </CardContent>
         </Card>

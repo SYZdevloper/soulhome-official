@@ -7,7 +7,8 @@ import Link from "next/link"
 import { ArrowLeft, BookOpen, Headphones, Play, FileText, Clock, Download, Calendar, Lock } from "lucide-react"
 import { DownloadButton } from "./download-button"
 import { getFileIdFromUrl } from "@/lib/google-drive"
-import { PdfViewer } from "./pdf-viewer"
+import { PdfViewerWrapper } from "./pdf-viewer-wrapper"
+import { PurchaseAction } from "@/components/purchase-action"
 
 interface ResourcePageProps {
   params: Promise<{ slug: string }>
@@ -22,44 +23,15 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     user = authUser
   } catch {
-    redirect("/auth/login")
-  }
-
-  if (!user) {
-    redirect("/auth/login")
+    // Let it be null
   }
 
   // Get profile to check admin status
-  const { data: profile } = await supabase
+  const { data: profile } = user ? await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
-
-  // Check subscription status
-  let { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('*, downloads_used, downloads_limit')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .single()
-
-  if (!subscription && profile?.is_admin) {
-    const startOfMonth = new Date()
-    startOfMonth.setDate(1)
-    startOfMonth.setHours(0, 0, 0, 0)
-    subscription = {
-      status: 'active',
-      downloads_used: 0,
-      downloads_limit: 9999,
-      current_period_start: startOfMonth.toISOString(),
-      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
-    } as any
-  }
-
-  const downloadsUsed = subscription?.downloads_used ?? 0
-  const downloadsLimit = subscription?.downloads_limit ?? 3
-  const downloadsLeft = Math.max(0, downloadsLimit - downloadsUsed)
+    .single() : { data: null }
 
   // Get resource
   const { data: resource } = await supabase
@@ -73,17 +45,26 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
     notFound()
   }
 
-  // Check if already downloaded this billing cycle
+  // Check purchase status
+  const { data: purchase } = user ? await supabase
+    .from('purchases')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('resource_id', resource.id)
+    .single() : { data: null }
+
+  const hasAccess = !!purchase || profile?.is_admin
+
+  // Check if already downloaded 
   let existingDownload = null
-  if (subscription?.current_period_start) {
-    const { data } = await supabase
+  if (user) {
+    const { data: downloadData } = await supabase
       .from('downloads')
       .select('*')
       .eq('user_id', user.id)
       .eq('resource_id', resource.id)
-      .eq('billing_period_start', subscription.current_period_start)
       .single()
-    existingDownload = data
+    existingDownload = downloadData
   }
 
   const typeIcons = {
@@ -116,10 +97,10 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div>
         <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href="/dashboard/resources">
+          <Link href="/kundalini-school">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Library
           </Link>
@@ -166,7 +147,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                   {(() => {
                     // Case 1: Google Drive Video
                     if (driveFileId) {
-                      if (existingDownload) {
+                      if (hasAccess) {
                         // Access Granted -> Show Player
                         return (
                           <iframe
@@ -188,9 +169,9 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                             <Lock className="w-12 h-12 mb-4 text-white/50" />
                             <p className="text-xl font-serif font-semibold">Video Locked</p>
                             <p className="text-sm text-white/70 mt-2 max-w-sm">
-                              {subscription
+                              {hasAccess
                                 ? "Click the 'Open Resource' button on the right to unlock and watch this video."
-                                : "Subscribe to the membership to unlock and watch this video."}
+                                : "Purchase this resource to unlock and watch this video."}
                             </p>
                           </div>
                         )
@@ -212,14 +193,12 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                 </div>
               )}
 
-
-
               {/* Audio Player Area */}
               {resource.type === 'audio' && resource.file_url && (
                 <div className="rounded-lg bg-secondary p-6 relative">
                   {(() => {
                     if (driveFileId) {
-                      if (existingDownload) {
+                      if (hasAccess) {
                         return (
                           <div className="aspect-[16/5] w-full">
                             <iframe
@@ -236,7 +215,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                             <Lock className="w-8 h-8 mb-2 text-muted-foreground" />
                             <p className="font-semibold text-foreground">Audio Locked</p>
                             <p className="text-sm text-muted-foreground mt-1">
-                              {subscription ? "Click 'Open Resource' to listen." : "Subscribe to listen."}
+                              {hasAccess ? "Click 'Open Resource' to listen." : "Purchase to listen."}
                             </p>
                           </div>
                         )
@@ -253,15 +232,14 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                 </div>
               )}
 
-              {/* PDF Preview Area (New) */}
+              {/* PDF Preview Area */}
               {resource.type === 'pdf' && resource.file_url && (
                 <div className="rounded-lg bg-secondary relative overflow-hidden">
                   {(() => {
                     if (driveFileId) {
-                      if (existingDownload) {
-                        // PDF Preview - load from secure local proxy to bypass Safari cookie blocking
+                      if (hasAccess) {
                         return (
-                          <PdfViewer 
+                          <PdfViewerWrapper 
                             url={`/api/resources/${resource.id}/pdf#toolbar=0`} 
                             title={resource.title} 
                           />
@@ -272,15 +250,13 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                             <Lock className="w-10 h-10 mb-3 text-zinc-400" />
                             <p className="font-serif text-lg font-semibold text-zinc-700">PDF Guide Locked</p>
                             <p className="text-sm text-zinc-500 mt-2 max-w-xs">
-                              {subscription ? "Unlock this guide by clicking 'Open Resource'." : "Subscribe to access this guide."}
+                              {hasAccess ? "Unlock this guide by clicking 'Open Resource'." : "Purchase to access this guide."}
                             </p>
                           </div>
                         )
                       }
                     }
 
-                    // Direct PDF Link fallback (just download link usually, but we can try embed)
-                    // Regular PDFs are hard to embed without a viewer, but browsers handle iframes ok often.
                     return (
                       <div className="aspect-[4/5] w-full bg-white">
                         <iframe
@@ -299,87 +275,43 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Download Counter */}
-          {subscription && (() => {
-            // Purple shades that intensify: 0 used = lightest, 3 used = darkest
-            const ratio = downloadsUsed / downloadsLimit
-            const bgShade = ratio >= 1
-              ? 'bg-purple-900/15 border-purple-400'
-              : ratio >= 0.67
-              ? 'bg-purple-700/12 border-purple-300'
-              : ratio >= 0.34
-              ? 'bg-purple-500/10 border-purple-200'
-              : 'bg-purple-100/60 border-purple-100'
-            const textShade = ratio >= 1
-              ? 'text-purple-900'
-              : ratio >= 0.67
-              ? 'text-purple-800'
-              : ratio >= 0.34
-              ? 'text-purple-700'
-              : 'text-purple-600'
-            const barShade = ratio >= 1
-              ? 'bg-purple-800'
-              : ratio >= 0.67
-              ? 'bg-purple-600'
-              : ratio >= 0.34
-              ? 'bg-purple-500'
-              : 'bg-purple-400'
-            const message = downloadsLeft === 0
-              ? 'Access limit reached'
-              : downloadsLeft === 1
-              ? '1 unlock left this month'
-              : `${downloadsLeft} unlocks left this month`
-            return (
-              <div className={`rounded-xl border p-4 ${bgShade}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <p className={`text-sm font-semibold ${textShade}`}>{message}</p>
-                </div>
-                <div className="h-2 rounded-full bg-purple-100 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${barShade}`}
-                    style={{ width: `${Math.min(100, ratio * 100)}%` }}
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-purple-500">{downloadsUsed} / {downloadsLimit} used</p>
-              </div>
-            )
-          })()}
           {/* Access Card */}
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Unlock Resource</CardTitle>
+              <CardTitle className="text-lg">{hasAccess ? "Download Resource" : "Unlock Resource"}</CardTitle>
               <CardDescription>
-                {subscription
-                  ? "Unlock this resource to view it on the website"
-                  : "Subscribe to unlock resources"}
+                {hasAccess
+                  ? "Download a copy of this resource to your device"
+                  : resource.price 
+                    ? `Purchase for $${resource.price} to unlock this resource`
+                    : "Purchase to unlock this resource"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {subscription ? (
-                (!existingDownload && downloadsLeft === 0) ? (
-                  <div className="text-center p-4 bg-muted/50 rounded-lg border border-border">
-                    <p className="text-sm font-medium text-foreground">Limit Reached</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      You have used all your unlocks for this billing period.
-                    </p>
-                  </div>
-                ) : (
-                  <DownloadButton
-                    resourceId={resource.id}
-                    fileUrl={resource.file_url}
-                    fileName={`${resource.slug}.${resource.type === 'pdf' ? 'pdf' : resource.type === 'audio' ? 'mp3' : 'mp4'}`}
-                    hasDownloaded={!!existingDownload}
-                    slug={slug}
-                  />
-                )
+              {hasAccess ? (
+                <DownloadButton
+                  resourceId={resource.id}
+                  fileUrl={resource.file_url}
+                  fileName={`${resource.slug}.${resource.type === 'pdf' ? 'pdf' : resource.type === 'audio' ? 'mp3' : 'mp4'}`}
+                  hasDownloaded={!!existingDownload}
+                  slug={slug}
+                />
               ) : (
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">
-                    An active subscription is required to download resources.
+                  <p className="text-sm text-muted-foreground mb-4">
+                    You do not own this resource.
                   </p>
-                  <Button className="mt-4 w-full" asChild>
-                    <Link href="/membership">Subscribe Now</Link>
-                  </Button>
+                  {resource.calendly_url ? (
+                    <PurchaseAction 
+                      calendlyUrl={resource.calendly_url} 
+                      slug={slug}
+                      price={resource.price} 
+                    />
+                  ) : (
+                    <Button className="w-full" disabled>
+                      Purchase Unavailable (No Link Set)
+                    </Button>
+                  )}
                 </div>
               )}
             </CardContent>

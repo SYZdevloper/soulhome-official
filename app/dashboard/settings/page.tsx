@@ -6,8 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { User, CreditCard, Mail } from "lucide-react"
 import { ProfileForm } from "./profile-form"
-import { CancelSubscriptionDialog } from "./cancel-subscription-dialog"
-import { BillingPortalButton } from "@/components/billing-portal-button"
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -29,25 +27,14 @@ export default async function SettingsPage() {
     .eq('id', user.id)
     .single()
 
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .single()
-
   const username = profile?.full_name || user.email?.split('@')[0] || 'your name'
-
-  const periodEndStr = subscription?.current_period_end
-    ? new Date(subscription.current_period_end).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    : ''
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="font-serif text-3xl font-bold text-foreground">Settings</h1>
         <p className="mt-2 text-muted-foreground">
-          Manage your account and subscription settings.
+          Manage your account settings.
         </p>
       </div>
 
@@ -70,83 +57,8 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Subscription Section */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <CreditCard className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="font-serif">Subscription</CardTitle>
-                <CardDescription>Manage your membership</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {subscription ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  {subscription.cancel_at_period_end ? (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">
-                      Cancelled
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
-                      Active
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Subscribed On</span>
-                  <span className="text-sm text-foreground">
-                    {new Date(subscription.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {subscription.cancel_at_period_end ? "Ends On" : "Renews On"}
-                  </span>
-                  <span className="text-sm text-foreground font-medium">
-                    {new Date(subscription.current_period_end).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <div className="pt-2">
-                  <BillingPortalButton />
-                </div>
-
-                {subscription.cancel_at_period_end ? (
-                  <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-sm text-amber-800 leading-relaxed font-medium">
-                      Your subscription is cancelled. If you want to continue, subscribe again after this period.
-                    </p>
-                  </div>
-                ) : (
-                  <CancelSubscriptionDialog
-                    username={username}
-                    periodEnd={periodEndStr}
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                <div className="rounded-lg bg-secondary/50 p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    You don{"'"}t have an active subscription.
-                  </p>
-                </div>
-                <Button className="w-full" asChild>
-                  <Link href="/membership">Subscribe Now</Link>
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Account Info Section */}
-        <Card className="border-border/50 lg:col-span-2">
+        <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">

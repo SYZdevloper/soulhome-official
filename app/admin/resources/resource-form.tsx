@@ -43,6 +43,8 @@ export function ResourceForm({ categories, resource }: ResourceFormProps) {
     type: resource?.type || "pdf",
     file_url: resource?.file_url || "",
     thumbnail_url: resource?.thumbnail_url || "",
+    calendly_url: resource?.calendly_url || "",
+    price: resource?.price?.toString() || "",
     duration_minutes: resource?.duration_minutes?.toString() || "",
     file_size_bytes: resource?.file_size_bytes?.toString() || "",
     category_id: resource?.category_id || "none",
@@ -136,6 +138,7 @@ export function ResourceForm({ categories, resource }: ResourceFormProps) {
 
       const duration = parseInt(formData.duration_minutes)
       const fileSize = parseInt(formData.file_size_bytes)
+      const price = parseFloat(formData.price)
 
       const data = {
         title: formData.title,
@@ -144,6 +147,8 @@ export function ResourceForm({ categories, resource }: ResourceFormProps) {
         type: formData.type,
         file_url: finalFileUrl,
         thumbnail_url: finalThumbnailUrl || null,
+        calendly_url: formData.calendly_url || null,
+        price: isNaN(price) ? null : price,
         duration_minutes: isNaN(duration) ? null : duration,
         file_size_bytes: isNaN(fileSize) ? null : fileSize,
         category_id: formData.category_id === "none" ? null : formData.category_id,
@@ -212,6 +217,35 @@ export function ResourceForm({ categories, resource }: ResourceFormProps) {
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Brief description of this resource"
                 rows={4}
+              />
+            </div>
+
+            <div className="space-y-2 border p-4 rounded-md bg-blue-50/50">
+              <Label htmlFor="calendly_url" className="text-blue-700">Calendly Event URL (Payment Link)</Label>
+              <div className="text-xs text-blue-600/80 mb-2">
+                Paste the full link from Calendly for this specific resource. This is used to map purchases from Calendly to this resource.
+              </div>
+              <Input
+                id="calendly_url"
+                value={formData.calendly_url}
+                onChange={(e) => setFormData(prev => ({ ...prev, calendly_url: e.target.value }))}
+                placeholder="https://calendly.com/your-name/payment-event-name"
+                type="url"
+              />
+            </div>
+
+            <div className="space-y-2 border p-4 rounded-md bg-green-50/50">
+              <Label htmlFor="price" className="text-green-700">Price ($)</Label>
+              <div className="text-xs text-green-600/80 mb-2">
+                Enter the price of this resource. This will be displayed on the resource page.
+              </div>
+              <Input
+                id="price"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                placeholder="e.g. 10.00"
+                type="number"
+                step="0.01"
               />
             </div>
 

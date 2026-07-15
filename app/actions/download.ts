@@ -16,30 +16,18 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
     const { success } = rateLimit(`download:${user.id}`, 10, 300000)
     if (!success) throw new Error("Too many download attempts. Please wait a few minutes.")
 
-    // 2. Check Subscription
-    let { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
-
     const { data: profile } = await supabase.from('profiles').select('email, is_admin').eq('id', user.id).single()
 
-    if (!subscription && profile?.is_admin) {
-        const startOfMonth = new Date()
-        startOfMonth.setDate(1)
-        startOfMonth.setHours(0, 0, 0, 0)
-        subscription = {
-            status: 'active',
-            downloads_used: 0,
-            downloads_limit: 9999,
-            current_period_start: startOfMonth.toISOString(),
-            current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + 10)).toISOString(),
-        } as any
-    }
+    let { data: purchase } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('resource_id', resourceId)
+        .single()
 
-    if (!subscription) throw new Error("No active subscription")
+    if (!purchase && !profile?.is_admin) {
+        throw new Error("You have not purchased this resource.")
+    }
 
     // 3. Get Resource Details & File ID
     const { data: resource } = await supabase
@@ -53,25 +41,13 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
 
     if (!profile?.email) throw new Error("User email not found")
 
-    // 4. Check for Existing Download Record THIS billing cycle
-    let existingDownload = null
-    if (subscription?.current_period_start) {
-        const { data } = await supabase
-            .from('downloads')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('resource_id', resourceId)
-            .eq('billing_period_start', subscription.current_period_start)
-            .single()
-        existingDownload = data
-    }
-
-    // 4.5. If NEW DOWNLOAD, Check Limit before granting access
-    if (!existingDownload) {
-        if ((subscription.downloads_used || 0) >= (subscription.downloads_limit || 3)) {
-            throw new Error("Download limit reached for this month.")
-        }
-    }
+    // 4. Check for Existing Download Record
+    const { data: existingDownload } = await supabase
+        .from('downloads')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('resource_id', resourceId)
+        .single()
 
     // 5. Grant/Restore Google Drive Access (Idempotent)
     // For PDFs, we proxy the file securely via our API so the user DOES NOT need direct Drive access.
@@ -88,7 +64,7 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
         }
     }
 
-    // 6. If ALREADY DOWNLOADED, we are done (Access restored, no quota used)
+    // 6. If ALREADY DOWNLOADED, we are done
     if (existingDownload) {
         // Optional: Update the permission ID in case it changed
         if (permissionId && permissionId !== existingDownload.drive_permission_id) {
@@ -97,12 +73,10 @@ export async function downloadResource(resourceId: string, resourceUrl: string, 
         return { success: true, url: resourceUrl, message: "Access Restored" }
     }
 
-    // 8. Record New Download (Trigger will increment usage)
+    // 7. Record New Download
     const { error } = await supabase.from('downloads').insert({
         user_id: user.id,
         resource_id: resourceId,
-        billing_period_start: subscription.current_period_start,
-        billing_period_end: subscription.current_period_end,
         drive_file_id: fileId,
         drive_permission_id: permissionId
     })

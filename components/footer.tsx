@@ -7,7 +7,7 @@ const footerLinks = {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/#testimonials", label: "Testimonials" },
-    { href: "/membership", label: "Membership" },
+    { href: "/kundalini-school", label: "Kundalini School" },
     { href: "/blog", label: "Blog" },
     { href: "/services", label: "1:1 Live Session" },
     { href: "/contact", label: "Contact" },

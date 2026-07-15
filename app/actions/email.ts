@@ -53,40 +53,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
     }
 }
 
-export async function sendCancellationEmail(email: string, name: string, periodEnd: string) {
-    if (!process.env.RESEND_API_KEY) {
-        console.warn("Skipping Cancellation Email: RESEND_API_KEY not found.");
-        return;
-    }
 
-    try {
-        await resend.emails.send({
-            from: 'Soul Home <hello@soulhomelove.com>',
-            to: email,
-            subject: 'Subscription Cancellation Confirmed',
-            html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <h1 style="color: #4b5563;">Subscription Cancelled</h1>
-                    <p style="font-size: 16px; line-height: 1.6;">Hello ${name},</p>
-                    <p style="font-size: 16px; line-height: 1.6;">This email confirms that your subscription to Soul Home has been cancelled as requested.</p>
-                    <p style="font-size: 16px; font-weight: bold; color: #ef4444;">You will retain full access to all resources until ${periodEnd}.</p>
-                    <p style="font-size: 16px; line-height: 1.6;">After this date, no further charges will be made. If you ever want to rejoin us, we'll be here with open arms!</p>
-                    <a href="https://soulhomelove.com/dashboard/settings" style="display: inline-block; border: 1px solid #6d28d9; color: #6d28d9; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">View My Settings</a>
-                </div>
-            `
-        });
-
-        const supabaseAdmin = getSupabaseAdmin();
-        await supabaseAdmin.from("email_logs").insert({
-            subject: 'Subscription Cancellation Confirmed',
-            recipient_count: 1,
-        });
-
-        console.log(`Cancellation email sent to ${email}`);
-    } catch (error) {
-        console.error("Error sending cancellation email:", error);
-    }
-}
 
 export async function sendContactEmail(name: string, email: string, subject: string, message: string) {
     if (!process.env.RESEND_API_KEY) {
@@ -167,25 +134,12 @@ export async function sendBulkEmail(formData: FormData) {
   // Fetch recipients based on target
   let recipients = new Map<string, string>(); // email -> name
 
-  if (["all_registered", "active", "expired", "free", "everyone"].includes(target)) {
+  if (["all_registered", "everyone"].includes(target)) {
     const { data: profiles } = await supabaseAdmin.from("profiles").select("id, email, full_name");
-    const { data: subscriptions } = await supabaseAdmin.from("subscriptions").select("user_id, status");
-
-    const subsByUser = new Map();
-    subscriptions?.forEach(sub => subsByUser.set(sub.user_id, sub.status));
 
     profiles?.forEach(p => {
-      const status = subsByUser.get(p.id);
       const name = p.full_name || "Friend";
-      if (target === "all_registered" || target === "everyone") {
-        if (p.email) recipients.set(p.email, name);
-      } else if (target === "active" && status === "active") {
-        if (p.email) recipients.set(p.email, name);
-      } else if (target === "expired" && status && status !== "active") {
-        if (p.email) recipients.set(p.email, name);
-      } else if (target === "free" && !status) {
-        if (p.email) recipients.set(p.email, name);
-      }
+      if (p.email) recipients.set(p.email, name);
     });
   }
 

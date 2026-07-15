@@ -28,10 +28,9 @@ export default async function AdminPage() {
     .from('profiles')
     .select('*', { count: 'exact', head: true })
 
-  const { count: activeSubscriptions } = await supabaseAdmin
-    .from('subscriptions')
+  const { count: totalPurchases } = await supabaseAdmin
+    .from('purchases')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'active')
 
   const { count: totalResources } = await supabaseAdmin
     .from('resources')
@@ -65,7 +64,7 @@ export default async function AdminPage() {
 
   const stats = [
     { label: "Total Members", value: totalMembers || 0, icon: Users, color: "from-blue-500/20 to-blue-600/5", iconColor: "text-blue-600 dark:text-blue-400" },
-    { label: "Active Subs", value: activeSubscriptions || 0, icon: CreditCard, color: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-600 dark:text-emerald-400" },
+    { label: "Total Purchases", value: totalPurchases || 0, icon: CreditCard, color: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-600 dark:text-emerald-400" },
     { label: "Total Blogs", value: totalBlogs || 0, icon: FileText, color: "from-violet-500/20 to-violet-600/5", iconColor: "text-violet-600 dark:text-violet-400" },
     { label: "Resources", value: totalResources || 0, icon: Library, color: "from-amber-500/20 to-amber-600/5", iconColor: "text-amber-600 dark:text-amber-400" },
   ]
@@ -114,15 +113,15 @@ export default async function AdminPage() {
               <div className="space-y-4">
                  <div className="flex items-center justify-between text-sm">
                    <span className="font-medium text-muted-foreground">Conversion Rate</span>
-                   <span className="font-bold text-primary">{totalMembers ? Math.round(((activeSubscriptions || 0) / totalMembers) * 100) : 0}%</span>
+                   <span className="font-bold text-primary">{totalMembers ? Math.round(((totalPurchases || 0) / totalMembers) * 100) : 0}%</span>
                  </div>
                  <div className="h-3 w-full rounded-full bg-secondary/50 overflow-hidden shadow-inner">
                     <div 
                       className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full" 
-                      style={{ width: `${totalMembers ? Math.round(((activeSubscriptions || 0) / totalMembers) * 100) : 0}%` }} 
+                      style={{ width: `${totalMembers ? Math.round(((totalPurchases || 0) / totalMembers) * 100) : 0}%` }} 
                     />
                  </div>
-                 <p className="text-[11px] text-muted-foreground italic">Percentage of registered members with active subscriptions</p>
+                 <p className="text-[11px] text-muted-foreground italic">Percentage of registered members with at least one purchase</p>
               </div>
 
               <div className="space-y-4">

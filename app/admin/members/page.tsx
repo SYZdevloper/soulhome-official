@@ -24,16 +24,17 @@ export default async function AdminMembersPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
-  // Get all subscriptions
-  const { data: subscriptions } = await supabaseAdmin
-    .from('subscriptions')
-    .select('*')
-
   // Get all downloads with resource metadata
   const { data: downloads } = await supabaseAdmin
     .from('downloads')
     .select('id, user_id, downloaded_at, resource:resources(id, title, type)')
     .order('downloaded_at', { ascending: false })
+
+  // Get all purchases with resource metadata
+  const { data: purchases } = await supabaseAdmin
+    .from('purchases')
+    .select('id, user_id, created_at, resource:resources(id, title, type)')
+    .order('created_at', { ascending: false })
 
   return (
     <div className="space-y-8">
@@ -46,8 +47,8 @@ export default async function AdminMembersPage() {
 
       <MembersClient 
         profiles={profiles || []} 
-        subscriptions={subscriptions || []} 
         downloads={(downloads as any) || []} 
+        purchases={(purchases as any) || []}
       />
     </div>
   )

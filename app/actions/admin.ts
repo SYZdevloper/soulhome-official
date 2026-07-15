@@ -179,15 +179,22 @@ export async function recordDownload(resourceId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  // Check subscription status
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .in("status", ["active", "trialing"])
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
     .single();
 
-  if (!subscription) throw new Error("Active subscription required");
+  const { data: purchase } = await supabase
+    .from("purchases")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("resource_id", resourceId)
+    .single();
+
+  if (!purchase && !profile?.is_admin) {
+    throw new Error("You must purchase this resource first");
+  }
 
   const { error } = await supabase.from("downloads").insert({
     user_id: user.id,
