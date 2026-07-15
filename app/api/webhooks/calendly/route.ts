@@ -25,6 +25,7 @@ export async function POST(req: Request) {
             // Alternatively, admin can set the calendly_url to exactly match the Calendly event link
 
             console.log(`[Calendly Webhook] Processing purchase for ${email}`);
+            console.log("Calendly Payload:", JSON.stringify(body));
 
             if (!email) {
                 return NextResponse.json({ error: 'Missing email' }, { status: 400 });
