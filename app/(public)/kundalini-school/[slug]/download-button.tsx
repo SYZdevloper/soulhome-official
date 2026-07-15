@@ -46,10 +46,20 @@ export function DownloadButton({
   return (
     <div className="space-y-3">
       {downloaded ? (
-        <div className="flex items-center justify-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm font-semibold">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          Access Unlocked
-        </div>
+        <Button
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+          asChild
+        >
+          <a
+            href={fileName.endsWith('.pdf') ? `/api/resources/${resourceId}/pdf` : fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={fileName}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4 shrink-0" />
+            Download Resource
+          </a>
+        </Button>
       ) : (
         <Button
           className="w-full"

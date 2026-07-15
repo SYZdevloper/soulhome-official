@@ -129,7 +129,7 @@ export async function POST(req: Request) {
 
             try {
                 await resend.emails.send({
-                    from: 'Soulhome <noreply@yourdomain.com>', // Update this to their verified domain
+                    from: 'Soulhome <noreply@soulhomelove.com>',
                     to: email,
                     subject: `Your Purchase Confirmation: ${matchedResource.title}`,
                     html: `
