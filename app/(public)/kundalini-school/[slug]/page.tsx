@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowLeft, BookOpen, Headphones, Play, FileText, Clock, Download, Calendar, Lock } from "lucide-react"
-import { DownloadButton } from "./download-button"
+import { ArrowLeft, BookOpen, Headphones, Play, FileText, Clock, Download, Calendar, Lock, CheckCircle } from "lucide-react"
 import { getFileIdFromUrl } from "@/lib/google-drive"
 import { PdfViewerWrapper } from "./pdf-viewer-wrapper"
 import { PurchaseAction } from "@/components/purchase-action"
@@ -278,10 +277,10 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
           {/* Access Card */}
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">{hasAccess ? "Download Resource" : "Unlock Resource"}</CardTitle>
+              <CardTitle className="text-lg">{hasAccess ? "Resource Unlocked" : "Unlock Resource"}</CardTitle>
               <CardDescription>
                 {hasAccess
-                  ? "Download a copy of this resource to your device"
+                  ? "You have full access to view this resource."
                   : resource.price 
                     ? `Purchase for $${resource.price} to unlock this resource`
                     : "Purchase to unlock this resource"}
@@ -289,13 +288,15 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
             </CardHeader>
             <CardContent>
               {hasAccess ? (
-                <DownloadButton
-                  resourceId={resource.id}
-                  fileUrl={resource.file_url}
-                  fileName={`${resource.slug}.${resource.type === 'pdf' ? 'pdf' : resource.type === 'audio' ? 'mp3' : 'mp4'}`}
-                  hasDownloaded={!!existingDownload}
-                  slug={slug}
-                />
+                <div className="flex flex-col items-center text-center space-y-3 py-2">
+                  <CheckCircle className="h-10 w-10 text-green-500" />
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                    Access Granted
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    You can view the full content on the left.
+                  </p>
+                </div>
               ) : (
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-4">
