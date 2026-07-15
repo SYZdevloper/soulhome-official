@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/server"
+import { createClient as createSupabaseAdmin } from "@supabase/supabase-js"
 import { notFound, redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -44,13 +45,21 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
     notFound()
   }
 
-  // Check purchase status
-  const { data: purchase } = user ? await supabase
-    .from('purchases')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('resource_id', resource.id)
-    .single() : { data: null }
+  // Check purchase status (bypassing RLS since we verify user.id securely on server)
+  let purchase = null
+  if (user) {
+    const adminClient = createSupabaseAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data } = await adminClient
+      .from('purchases')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('resource_id', resource.id)
+      .single()
+    purchase = data
+  }
 
   const hasAccess = !!purchase || profile?.is_admin
 
