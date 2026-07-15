@@ -58,7 +58,7 @@ export async function POST(req: Request) {
             // 3. Find the resource that matches this Calendly link
             const { data: resources, error: resourceError } = await supabase
                 .from('resources')
-                .select('id, title, calendly_url, file_url')
+                .select('id, title, slug, calendly_url, file_url')
                 .not('calendly_url', 'is', null);
 
             if (resourceError || !resources || resources.length === 0) {
@@ -141,12 +141,11 @@ export async function POST(req: Request) {
             }
 
             // 5. Send Welcome / Magic Link Email
-            // Note: We're sending a generic login link. Alternatively, we could generate a magic link using Supabase admin
             const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
                 type: 'magiclink',
                 email: email,
                 options: {
-                    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/resources`,
+                    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/kundalini-school/${matchedResource.slug}`,
                 }
             });
 
